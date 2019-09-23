@@ -22,8 +22,8 @@ public class Position {
 	}
 	
 	public boolean inPlayArea() {
-		boolean inPlayArea = (this.latitude >= this.latitude_min) && (this.latitude <= this.latitude_max) && 
-				(this.longitude >= this.longitude_min) && (this.longitude <= this.longitude_max); 
+		boolean inPlayArea = (this.latitude > this.latitude_min) && (this.latitude < this.latitude_max) && 
+				(this.longitude > this.longitude_min) && (this.longitude < this.longitude_max); 
 		return inPlayArea;
 	}
 }
