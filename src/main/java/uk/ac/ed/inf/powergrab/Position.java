@@ -4,10 +4,6 @@ public class Position {
 	public double latitude;
 	public double longitude;
 	public final double r = 0.0003;
-	public final double longitude_max = 55.946233;
-	public final double longitude_min = 55.942617;
-	public final double latitude_max = -3.184319;
-	public final double latitude_min = -3.192473;
 	
 	public Position(double latitude, double longitude) {
 		this.latitude = latitude;
@@ -22,8 +18,8 @@ public class Position {
 	}
 	
 	public boolean inPlayArea() {
-		boolean inPlayArea = (this.latitude > this.latitude_min) && (this.latitude < this.latitude_max) && 
-				(this.longitude > this.longitude_min) && (this.longitude < this.longitude_max); 
+		boolean inPlayArea = (this.latitude > 55.942617) && (this.latitude < 55.946233) && 
+				(this.longitude > -3.192473) && (this.longitude < -3.184319); 
 		return inPlayArea;
 	}
 }
