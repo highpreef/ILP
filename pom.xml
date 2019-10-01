@@ -21,10 +21,10 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-    	<groupId>com.googlecode.json-simple</groupId>
-    	<artifactId>json-simple</artifactId>
-    	<version>1.1</version>
+	<dependency>
+    	<groupId>com.mapbox.mapboxsdk</groupId>
+    	<artifactId>mapbox-sdk-geojson</artifactId>
+    	<version>4.9.0</version>
 	</dependency>
   </dependencies>
 </project>
