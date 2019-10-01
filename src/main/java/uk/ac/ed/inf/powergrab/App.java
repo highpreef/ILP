@@ -1,8 +1,7 @@
 package uk.ac.ed.inf.powergrab;
 
-import com.google.gson.*;
-import com.mapbox.geojson.*;
 
+import com.google.gson.*;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
