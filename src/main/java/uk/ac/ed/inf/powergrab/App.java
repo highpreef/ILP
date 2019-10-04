@@ -1,9 +1,7 @@
 package uk.ac.ed.inf.powergrab;
 
 
-import com.google.gson.*;
 import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Feature;
 
@@ -68,9 +66,9 @@ public class App {
     	
     	Random generator = new Random(seed);
     	Position initialPosition = new Position(55.944425, -3.188396);
-    	//Stateless_Drone drone = new Stateless_Drone(initialPosition, generator);
+    	Stateless_Drone drone = new Stateless_Drone(initialPosition, generator);
     	
-    	;
+    	System.out.println(drone.hasPower());
     	System.out.println(POIs.get(0).latitude);
     }
 }
