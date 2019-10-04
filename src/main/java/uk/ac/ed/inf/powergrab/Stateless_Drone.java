@@ -9,8 +9,8 @@ public class Stateless_Drone {
 	private double power;
 	private int move;
 	private Random randNumbGen;
-	private ArrayList<Feature> inRange = new ArrayList<>();
-	private ArrayList<Feature> inMoveRange = new ArrayList<>();
+	private ArrayList<POI> inRange = new ArrayList<>();
+	private ArrayList<POI> inMoveRange = new ArrayList<>();
 	
 	public Stateless_Drone(Position initialPosition, Random randNumGen) {
 		this.currentPosition = initialPosition;
@@ -21,39 +21,39 @@ public class Stateless_Drone {
 	}
 	
 	public void getInRange() {
-		for (Feature POI : App.POI) {
-			double distance = EuclideanDist(POI.latitude, POI.longitude, currentPosition.latitude, currentPosition.longitude);
+		for (POI feature : App.POIs) {
+			double distance = EuclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
 			if (distance <= 0.00025)
-				inRange.add(POI);
+				inRange.add(feature);
 			else if (distance > 0.00025 && distance <= 0.00055)
-				inMoveRange.add(POI);
+				inMoveRange.add(feature);
 		}
 		return;
 	}
 	
 	public void updateStatus() {
-		for (Feature POI : inRange) {
-			if (POI.symbol.equals("lighthouse")) {
-				this.coins += POI.coins;
-				this.power += POI.power;
-				POI.coins = 0;
-				POI.power = 0;
-			} else if (POI.symbol.equals("danger")) {
-				double coinDif = this.coins + POI.coins;
-				double powerDif = this.power + POI.power;
+		for (POI feature : inRange) {
+			if (feature.symbol.equals("lighthouse")) {
+				this.coins += feature.coins;
+				this.power += feature.power;
+				feature.coins = 0;
+				feature.power = 0;
+			} else if (feature.symbol.equals("danger")) {
+				double coinDif = this.coins + feature.coins;
+				double powerDif = this.power + feature.power;
 				if (coinDif < 0) {
 					this.coins = 0;
-					POI.coins -= coinDif;
+					feature.coins -= coinDif;
 				} else {
 					this.coins -= coinDif;
-					POI.coins = 0;
+					feature.coins = 0;
 				}
 				if (powerDif < 0) {
 					this.power = 0;
-					POI.power -= powerDif;
+					feature.power -= powerDif;
 				} else {
 					this.power -= powerDif;
-					POI.power = 0;
+					feature.power = 0;
 				}
 			}
 		}
@@ -68,11 +68,11 @@ public class Stateless_Drone {
 		ArrayList<Direction> lighthousesInMoveRange = new ArrayList<>();
 		for (Direction d : Direction.values()) {
 			Position nextPos = this.currentPosition.nextPosition(d);
-			for (Feature POI : inMoveRange) {
-				double distance = EuclideanDist(POI.latitude, POI.longitude, nextPos.latitude, nextPos.longitude);
-				if (distance <= 0.00025 && POI.symbol.equals("lighthouse") && (POI.coins > 0 || POI.power > 0)) {
+			for (POI feature : inMoveRange) {
+				double distance = EuclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
+				if (distance <= 0.00025 && feature.symbol.equals("lighthouse") && (feature.coins > 0 || feature.power > 0)) {
 					lighthousesInMoveRange.add(d);
-				} else if (distance <= 0.00025 && POI.symbol.equals("danger") && (POI.coins < 0 || POI.power < 0)) {
+				} else if (distance <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
 					break;
 				} else {
 					possibleMoves.add(d);
@@ -81,6 +81,7 @@ public class Stateless_Drone {
 		}
 		
 		if (!lighthousesInMoveRange.isEmpty()) {
+			//choose lighthouse based on benefit
 			Direction nextDir = lighthousesInMoveRange.get((int) Math.round(this.randNumbGen.nextDouble() * lighthousesInMoveRange.size()));
 			this.currentPosition = this.currentPosition.nextPosition(nextDir);
 			updateStatus();
