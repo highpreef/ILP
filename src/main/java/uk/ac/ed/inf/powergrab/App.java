@@ -1,7 +1,9 @@
 package uk.ac.ed.inf.powergrab;
 
 
+import com.google.gson.*;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Feature;
 
@@ -43,9 +45,11 @@ public class App {
 		return result.parallel().collect(Collectors.joining("\n"));
 	}
 	
-    public static void main( String[] args ) {
-    	int seed = 5234;
-    	String mapString = "http://homepages.inf.ed.ac.uk/stg/powergrab/2019/09/15/powergrabmap.geojson";
+    public static void main(String[] args) {
+    	String day = args[0];
+    	String month = args[1];
+    	String year = args[2];
+    	String mapString = String.format("http://homepages.inf.ed.ac.uk/stg/powergrab/%s/%s/%s/powergrabmap.geojson", year, month, day);
     	
     	try {
 			URL mapUrl = new URL(mapString);
@@ -64,8 +68,13 @@ public class App {
 			e.printStackTrace();
 		}
     	
+    	double latitude = Double.parseDouble(args[3]);
+    	double longitude = Double.parseDouble(args[4]);
+    	int seed = Integer.parseInt(args[5]);
+    	String droneType = args[6];
     	Random generator = new Random(seed);
-    	Position initialPosition = new Position(55.944425, -3.188396);
+    	Position initialPosition = new Position(latitude, longitude);
+
     	Stateless_Drone drone = new Stateless_Drone(initialPosition, generator);
     	
     	System.out.println(drone.hasPower());
