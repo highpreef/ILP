@@ -85,7 +85,7 @@ public class App {
     	
     	if (droneType.equals("stateless")) {
     		Stateless_Drone drone = new Stateless_Drone(initialPosition, generator);
-    		while (drone.hasPower() || drone.move < 200) {
+    		for (int i = 0; i < 200; i++) {
     			String pos = String.format("%f,%f,", drone.currentPosition.latitude, drone.currentPosition.longitude);
     			Direction move = drone.makeMove();
     			String nextPos = String.format("%s,%f,%f,%f,%f", move, drone.currentPosition.latitude, drone.currentPosition.longitude, drone.coins, drone.power);
