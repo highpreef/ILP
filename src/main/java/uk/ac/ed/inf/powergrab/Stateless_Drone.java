@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Stateless_Drone {
-	private Position currentPosition;
-	private double coins;
-	private double power;
-	private int move;
+	public Position currentPosition;
+	public double coins;
+	public double power;
+	public int move;
 	private Random randNumbGen;
 	private ArrayList<POI> inRange = new ArrayList<>();
 	private ArrayList<POI> inMoveRange = new ArrayList<>();
@@ -64,6 +64,7 @@ public class Stateless_Drone {
 		getInRange();
 		if (this.move == 0)
 			updateStatus();
+		this.move++;
 		ArrayList<Direction> possibleMoves = new ArrayList<>();
 		ArrayList<Direction> lighthousesInMoveRange = new ArrayList<>();
 		for (Direction d : Direction.values()) {
@@ -82,17 +83,17 @@ public class Stateless_Drone {
 		
 		if (!lighthousesInMoveRange.isEmpty()) {
 			//choose lighthouse based on benefit
-			Direction nextDir = lighthousesInMoveRange.get((int) Math.round(this.randNumbGen.nextDouble() * lighthousesInMoveRange.size()));
+			Direction nextDir = lighthousesInMoveRange.get((int) Math.round(this.randNumbGen.nextDouble() * (lighthousesInMoveRange.size() - 1)));
 			this.currentPosition = this.currentPosition.nextPosition(nextDir);
 			updateStatus();
 			return nextDir;
 		} else if (lighthousesInMoveRange.isEmpty() && !possibleMoves.isEmpty()) {
-			Direction nextDir = possibleMoves.get((int) Math.round(this.randNumbGen.nextDouble() * possibleMoves.size()));
+			Direction nextDir = possibleMoves.get((int) Math.round(this.randNumbGen.nextDouble() * (possibleMoves.size() - 1)));
 			this.currentPosition = this.currentPosition.nextPosition(nextDir);
 			updateStatus();
 			return nextDir;
 		} else {
-			Direction nextDir = Direction.values()[((int) Math.round(this.randNumbGen.nextDouble() * 16))];
+			Direction nextDir = Direction.values()[((int) Math.round(this.randNumbGen.nextDouble() * 15))];
 			this.currentPosition = this.currentPosition.nextPosition(nextDir);
 			updateStatus();
 			return nextDir;
