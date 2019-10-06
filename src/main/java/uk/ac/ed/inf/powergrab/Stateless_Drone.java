@@ -5,8 +5,8 @@ import java.util.Random;
 
 public class Stateless_Drone {
 	public Position currentPosition;
-	public double coins;
-	public double power;
+	public float coins;
+	public float power;
 	public int move;
 	private Random randNumbGen;
 	private ArrayList<POI> inRange = new ArrayList<>();
@@ -67,25 +67,27 @@ public class Stateless_Drone {
 		}
 		
 		this.move++;
-		ArrayList<Direction> randomMoves = new ArrayList<>();
-		ArrayList<Direction> possibleMoves = new ArrayList<>();
+		ArrayList<Direction> randomValidMoves = new ArrayList<>();
+		ArrayList<Direction> safeMoves = new ArrayList<>();
 		ArrayList<Direction> lighthousesInMoveRange = new ArrayList<>();
+		
 		for (Direction d : Direction.values()) {
 			Position nextPos = this.currentPosition.nextPosition(d);
 			if (nextPos.inPlayArea())
-				randomMoves.add(d);
+				randomValidMoves.add(d);
 			boolean danger = false;
 			
 			for (POI feature : inMoveRange) {
 				double distance = EuclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
 				if (distance <= 0.00025 && feature.symbol.equals("lighthouse") && (feature.coins > 0 || feature.power > 0)) {
-					lighthousesInMoveRange.add(d);
-				} else if (distance <= 0.00025 && feature.symbol.equals("danger")) {
+					if (nextPos.inPlayArea())
+						lighthousesInMoveRange.add(d);
+				} else if (distance <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
 					danger = true;
 				}	
 			}
 			if (!danger && nextPos.inPlayArea())
-				possibleMoves.add(d);
+				safeMoves.add(d);
 		}
 		
 		this.inMoveRange = new ArrayList<>();
@@ -99,15 +101,15 @@ public class Stateless_Drone {
 			getInRange();
 			updateStatus();
 			return nextDir;
-		} else if (lighthousesInMoveRange.isEmpty() && !possibleMoves.isEmpty()) {
-			Direction nextDir = possibleMoves.get((int) Math.round(this.randNumbGen.nextDouble() * (possibleMoves.size() - 1)));
+		} else if (lighthousesInMoveRange.isEmpty() && !safeMoves.isEmpty()) {
+			Direction nextDir = safeMoves.get((int) Math.round(this.randNumbGen.nextDouble() * (safeMoves.size() - 1)));
 			this.currentPosition = this.currentPosition.nextPosition(nextDir);
 			this.power -= 2.5;		
 			getInRange();
 			updateStatus();
 			return nextDir;
 		} else {
-			Direction nextDir = randomMoves.get((int) Math.round(this.randNumbGen.nextDouble() * (randomMoves.size() - 1)));
+			Direction nextDir = randomValidMoves.get((int) Math.round(this.randNumbGen.nextDouble() * (randomValidMoves.size() - 1)));
 			this.currentPosition = this.currentPosition.nextPosition(nextDir);
 			this.power -= 2.5;
 			getInRange();

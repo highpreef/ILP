@@ -48,6 +48,36 @@ public class App {
 		return result.parallel().collect(Collectors.joining("\n"));
 	}
 	
+	private static String buildJsonFile(String mapSource, ArrayList<Point> points) {
+		JsonObject main = new JsonObject();
+    	main.addProperty("type", "FeatureCollection");
+    		
+    	JsonParser parser = new JsonParser();
+    	JsonObject jsonFile = (JsonObject) parser.parse(mapSource);
+    	JsonArray featureArray = jsonFile.get("features").getAsJsonArray();
+
+    	LineString lineStringObject = LineString.fromLngLats(points);
+    	String lineStringJson = lineStringObject.toJson();
+    	
+    	JsonObject geometry = (JsonObject) parser.parse(lineStringJson);
+
+    	JsonObject lineString = new JsonObject();
+    	lineString.addProperty("type", "Feature");
+    	lineString.add("properties", new JsonObject());
+    	lineString.add("geometry", geometry);
+    	featureArray.add(lineString);
+    	
+    	main.add("features", featureArray);
+    	
+    	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String prettyJson = gson.toJson(main);
+        return prettyJson;
+	}
+	
+	private static String formatTextOutput(Position firstPos, Position secondPos, Direction direction, float coins, float power) {
+		return String.format("%f,%f,%s,%f,%f,%f,%f", firstPos.latitude, firstPos.longitude, direction, secondPos.latitude, secondPos.longitude, coins, power);
+	}
+	
     public static void main(String[] args) {
     	String day = args[0];
     	String month = args[1];
@@ -85,13 +115,13 @@ public class App {
     	
     	if (droneType.equals("stateless")) {
     		Stateless_Drone drone = new Stateless_Drone(initialPosition, generator);
-    		for (int i = 0; i < 200; i++) {
-    			String pos = String.format("%f,%f,", drone.currentPosition.latitude, drone.currentPosition.longitude);
+    		while (drone.hasPower() && drone.move < 250) {
+    			Position firstPos = drone.currentPosition;
     			Direction move = drone.makeMove();
-    			String nextPos = String.format("%s,%f,%f,%f,%f", move, drone.currentPosition.latitude, drone.currentPosition.longitude, drone.coins, drone.power);
+    			Position secondPos = drone.currentPosition;
+    			String text = formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
     			points.add(Point.fromLngLat(drone.currentPosition.longitude, drone.currentPosition.latitude));
-    			pos = pos.concat(nextPos);
-    			moveList.add(pos);
+    			moveList.add(text);
     		}
     	} else if (droneType.equals("stateful")) {
     		
@@ -108,36 +138,12 @@ public class App {
 			e.printStackTrace();
 		}
     	
-    	String jsonFileName = String.format("%s-%s-%s-%s.geojson", droneType, day, month, year);
-    	
-    	JsonObject main = new JsonObject();
-    	main.addProperty("type", "FeatureCollection");
-    	main.addProperty("date-generated", String.format("%s %s %s", day, month, year));
-    	
-    	
-    	JsonParser parser = new JsonParser();
-    	JsonObject json = (JsonObject) parser.parse(mapSource);
-    	JsonArray arr = json.get("features").getAsJsonArray();
-
-    	LineString ls = LineString.fromLngLats(points);
-    	String line = ls.toJson();
-    	
-    	JsonObject geometry = (JsonObject) parser.parse(line);
-
-    	JsonObject lineString = new JsonObject();
-    	lineString.addProperty("type", "Feature");
-    	lineString.add("properties", new JsonObject());
-    	lineString.add("geometry", geometry);
-    	lineString.add("geometry", geometry);
-    	arr.add(lineString);
-    	main.add("features", arr);
-    	
-    	Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String prettyJson = gson.toJson(main);
+    	String jsonFileName = String.format("%s-%s-%s-%s.geojson", droneType, day, month, year);  	
+    	String jsonFile = buildJsonFile(mapSource, points);
     	
     	try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFileName));
-			writer.write(prettyJson);
+			writer.write(jsonFile);
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
