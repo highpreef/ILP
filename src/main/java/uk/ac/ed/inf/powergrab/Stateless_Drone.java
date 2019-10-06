@@ -20,7 +20,7 @@ public class Stateless_Drone {
 		this.randNumbGen = randNumGen;
 	}
 	
-	public void getInRange() {
+	private void getInRange() {
 		for (POI feature : App.POIs) {
 			double distance = EuclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
 			if (distance <= 0.00025)
@@ -31,7 +31,7 @@ public class Stateless_Drone {
 		return;
 	}
 	
-	public void updateStatus() {
+	private void updateStatus() {
 		for (POI feature : inRange) {
 			if (feature.symbol.equals("lighthouse")) {
 				this.coins += feature.coins;

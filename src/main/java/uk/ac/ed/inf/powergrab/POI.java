@@ -18,9 +18,4 @@ public class POI {
 		this.symbol = symbol;
 		this.color = color;
 	}
-	
-	public String toString() {
-		String feature = String.format("ID: %s\nSymbol: %s\nCoordinates: [%f.4,%f.4]\nCoins: %f.4\nPower: %f.4\nColor: %s", id, symbol, latitude, longitude, coins, power, color);
-		return feature;
-	}
 }
