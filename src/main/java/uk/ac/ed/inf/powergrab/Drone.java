@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Drone {
-	
 	protected Position currentPosition;
 	protected float coins;
 	protected float power;
 	protected int move;
-	protected Random randNumbGen;
+	protected Random randNumGen;
 	protected ArrayList<POI> inRange = new ArrayList<>();
 	
 	public Drone(Position initialPosition, Random randNumGen) {
@@ -17,7 +16,7 @@ public class Drone {
 		this.coins = 0;
 		this.power = 250;
 		this.move = 0;
-		this.randNumbGen = randNumGen;
+		this.randNumGen = randNumGen;
 	}
 	
 	protected void updateStatus() {

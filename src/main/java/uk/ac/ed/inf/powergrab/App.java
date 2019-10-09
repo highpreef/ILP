@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class App {
-	
 	public static ArrayList<POI> POIs = new ArrayList<>();
 	
 	private static void parseFeatures(String mapSource) {	
@@ -124,7 +123,15 @@ public class App {
     			moveList.add(text);
     		}
     	} else if (droneType.equals("stateful")) {
-    		
+    		Stateful drone = new Stateful(initialPosition, generator);
+    		while (drone.hasPower() && drone.move < 250) {
+    			Position firstPos = drone.currentPosition;
+    			Direction move = drone.makeMove();
+    			Position secondPos = drone.currentPosition;
+    			String text = formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
+    			points.add(Point.fromLngLat(drone.currentPosition.longitude, drone.currentPosition.latitude));
+    			moveList.add(text);
+    		}
     	}
     	
     	String textFileName = String.format("%s-%s-%s-%s.txt", droneType, day, month, year);
