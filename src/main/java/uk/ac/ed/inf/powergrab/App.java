@@ -114,7 +114,7 @@ public class App {
     	points.add(Point.fromLngLat(longitude, latitude));
     	
     	if (droneType.equals("stateless")) {
-    		Stateless_Drone drone = new Stateless_Drone(initialPosition, generator);
+    		Stateless drone = new Stateless(initialPosition, generator);
     		while (drone.hasPower() && drone.move < 250) {
     			Position firstPos = drone.currentPosition;
     			Direction move = drone.makeMove();
