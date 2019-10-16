@@ -12,7 +12,7 @@ public class Stateless extends Drone {
 	
 	private void getInRange() {
 		for (POI feature : App.POIs) {
-			double distance = EuclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
+			double distance = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
 			if (distance <= 0.00025)
 				inRange.add(feature);
 			else if (distance > 0.00025 && distance <= 0.00055)
@@ -21,11 +21,7 @@ public class Stateless extends Drone {
 		return;
 	}
 	
-	public Direction makeMove() {
-		if (move == 0) {
-			getInRange();
-			updateStatus();
-		}		
+	public Direction makeMove() {	
 		move++;
 		
 		ArrayList<Direction> randomValidMoves = new ArrayList<>();
@@ -35,15 +31,32 @@ public class Stateless extends Drone {
 		for (Direction d : Direction.values()) {
 			Position nextPos = currentPosition.nextPosition(d);
 			boolean danger = false;
+			boolean lighthouse = false;
+			
+			double closestLighthouse = 0.00025;
+			double closestDanger = 0.00026;
 			
 			if (nextPos.inPlayArea()) {
 				for (POI feature : inMoveRange) {
-					double distance = EuclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
+					double distance = euclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
 					if (distance <= 0.00025 && feature.symbol.equals("lighthouse") && (feature.coins > 0 || feature.power > 0)) {
-						lighthousesInMoveRange.add(d);
+						lighthouse = true;
+						if (distance <= closestLighthouse) {
+							closestLighthouse = distance;
+						}
 					} else if (distance <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
 						danger = true;
+						if (distance <= closestDanger) {
+							closestDanger = distance;
+						}
 					}
+				}
+				if (lighthouse && danger) {
+					if (closestLighthouse < closestDanger) {
+						lighthousesInMoveRange.add(d);
+					} 
+				} else if (lighthouse) {
+					lighthousesInMoveRange.add(d);
 				}
 				if (!danger)
 					safeMoves.add(d);
@@ -55,7 +68,6 @@ public class Stateless extends Drone {
 		this.inRange = new ArrayList<>();
 		
 		if (!lighthousesInMoveRange.isEmpty()) {
-			//choose lighthouse based on benefit
 			Direction nextDir = lighthousesInMoveRange.get(randNumGen.nextInt(lighthousesInMoveRange.size()));
 			currentPosition = currentPosition.nextPosition(nextDir);
 			power -= 2.5;

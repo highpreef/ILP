@@ -14,7 +14,7 @@ public class Stateful extends Drone {
 	
 	private void loadTargets() {
 		for (POI feature : App.POIs) {
-			double distance = EuclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
+			double distance = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
 			if (distance > 0.00025 && feature.symbol.equals("lighthouse") && (feature.coins > 0 || feature.power > 0))
 				unvisitedPOIs.add(feature);
 		}
@@ -26,7 +26,7 @@ public class Stateful extends Drone {
 		double minDist = -1;
 		
 		for (POI feature : unvisitedPOIs) {
-			double distance = EuclideanDist(currentPosition.latitude, currentPosition.longitude, feature.latitude, feature.longitude);
+			double distance = euclideanDist(currentPosition.latitude, currentPosition.longitude, feature.latitude, feature.longitude);
 			if (minDist == -1) {
 				minDist = distance;
 				nearestPOIs.add(feature);
@@ -46,23 +46,19 @@ public class Stateful extends Drone {
 	}
 	
 	public Direction makeMove() {
-		if (move == 0) {
-			updateStatus();
-			getNextTarget();
-		}
 		move++;
 		
-		double distanceToTarget = EuclideanDist(target.latitude, target.longitude, currentPosition.latitude, currentPosition.longitude);
+		double distanceToTarget = euclideanDist(target.latitude, target.longitude, currentPosition.latitude, currentPosition.longitude);
 		ArrayList<Direction> nextPossibleMoves = new ArrayList<>();
 		
 		for (Direction d : Direction.values()) {
 			Position nextPos = currentPosition.nextPosition(d);
-			double nextDistToTarget = EuclideanDist(target.latitude, target.longitude, nextPos.latitude, nextPos.longitude);
+			double nextDistToTarget = euclideanDist(target.latitude, target.longitude, nextPos.latitude, nextPos.longitude);
 			boolean danger = false;
 			
 			if (nextPos.inPlayArea()) {
 				for (POI feature : App.POIs) {
-					double distanceToFeature = EuclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
+					double distanceToFeature = euclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
 					if (distanceToFeature <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
 						danger = true;
 					}

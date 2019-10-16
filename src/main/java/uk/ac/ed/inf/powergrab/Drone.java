@@ -20,31 +20,41 @@ public class Drone {
 	}
 	
 	protected void updateStatus() {
+		POI closestPOI = null;
+		double minDist = 0.00025;
 		for (POI feature : inRange) {
-			if (feature.symbol.equals("lighthouse")) {
-				this.coins += feature.coins;
-				this.power += feature.power;
-				feature.coins = 0;
-				feature.power = 0;
-			} else if (feature.symbol.equals("danger")) {
-				double coinDif = this.coins + feature.coins;
-				double powerDif = this.power + feature.power;
+			double dist = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
+			if (dist <= minDist) {
+				minDist = dist;
+				closestPOI = feature;
+			}			
+		}
+		if (closestPOI != null) {
+			if (closestPOI.symbol.equals("lighthouse")) {
+				this.coins += closestPOI.coins;
+				this.power += closestPOI.power;
+				closestPOI.coins = 0;
+				closestPOI.power = 0;
+			} else if (closestPOI.symbol.equals("danger")) {
+				double coinDif = this.coins + closestPOI.coins;
+				double powerDif = this.power + closestPOI.power;
 				if (coinDif < 0) {
 					this.coins = 0;
-					feature.coins -= coinDif;
+					closestPOI.coins -= coinDif;
 				} else {
-					this.coins = this.coins + feature.coins;
-					feature.coins = 0;
+					this.coins = this.coins + closestPOI.coins;
+					closestPOI.coins = 0;
 				}
 				if (powerDif < 0) {
 					this.power = 0;
-					feature.power -= powerDif;
+					closestPOI.power -= powerDif;
 				} else {
-					this.power = this.power + feature.power;
-					feature.power = 0;
+					this.power = this.power + closestPOI.power;
+					closestPOI.power = 0;
 				}
 			}
 		}
+		
 		return;
 	}
 	
@@ -52,7 +62,7 @@ public class Drone {
 		return this.power > 0;
 	}
 	
-	protected double EuclideanDist(double xLat, double xLong, double yLat, double yLong) {
+	protected double euclideanDist(double xLat, double xLong, double yLat, double yLong) {
 		return Math.sqrt(Math.pow(xLat - yLat, 2) + Math.pow(xLong - yLong, 2));
 	}
 
