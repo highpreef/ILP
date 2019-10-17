@@ -120,7 +120,7 @@ public class App {
     			Position secondPos = drone.currentPosition;
     			String text = formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
     			points.add(Point.fromLngLat(drone.currentPosition.longitude, drone.currentPosition.latitude));
-    			moveList.add(String.format(text + " %d", drone.move));
+    			moveList.add(text);
     		}
     	} else if (droneType.equals("stateful")) {
     		Stateful drone = new Stateful(initialPosition, generator);
