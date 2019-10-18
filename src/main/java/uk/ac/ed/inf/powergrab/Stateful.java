@@ -33,33 +33,40 @@ public class Stateful extends Drone {
 	}
 	
 	private void getNextTarget() {
-		POI nearestPOIs = unvisitedPOIs.get(0);
-		double minDist = -1;
+		if (!unvisitedPOIs.isEmpty()) {
+			POI nearestPOIs = unvisitedPOIs.get(0);
+			double minDist = -1;
 		
-		for (POI feature : unvisitedPOIs) {
-			double distance = euclideanDist(currentPosition.latitude, currentPosition.longitude, feature.latitude, feature.longitude);
-			if (minDist == -1) {
-				minDist = distance;
-				nearestPOIs = feature;
-			} else if (distance <= minDist) {
-				minDist = distance;
-				nearestPOIs = feature;
-			} 
+			for (POI feature : unvisitedPOIs) {
+				double distance = euclideanDist(currentPosition.latitude, currentPosition.longitude, feature.latitude, feature.longitude);
+				if (minDist == -1) {
+					minDist = distance;
+					nearestPOIs = feature;
+				} else if (distance <= minDist) {
+					minDist = distance;
+					nearestPOIs = feature;
+				} 
+			}
+			target = nearestPOIs;
+			unvisitedPOIs.remove(target);
+			return;
+		} else {
+			target = null;
 		}
-		target = nearestPOIs;
-		unvisitedPOIs.remove(target);
-		return;
+		
 	}
 	
 	public Direction makeMove() {
-		if (unvisitedPOIs.isEmpty()) {
+		if (target == null) {
 			power -= 2.5;
+			move++;
 			return Direction.N;
 		}
 			
 		move++;
 
 		double distanceToTarget = euclideanDist(target.latitude, target.longitude, currentPosition.latitude, currentPosition.longitude);
+		double minDistToTarget = Integer.MAX_VALUE;
 		ArrayList<Direction> nextPossibleMoves = new ArrayList<>();
 		
 		for (Direction d : Direction.values()) {
@@ -75,14 +82,22 @@ public class Stateful extends Drone {
 //					}
 //				}
 				
-				if (!danger && (nextDistToTarget < distanceToTarget))
-					nextPossibleMoves.add(d);
+				if (!danger && (nextDistToTarget < distanceToTarget)) {
+					if (nextDistToTarget < minDistToTarget) {
+						minDistToTarget = nextDistToTarget;
+						nextPossibleMoves.clear();
+						nextPossibleMoves.add(d);
+					} else if (nextDistToTarget == minDistToTarget) {
+						nextPossibleMoves.add(d);
+					}
+				}
 			}
 		}
 		
 		if (nextPossibleMoves.isEmpty()) {
 			Direction nextDir = Direction.values()[randNumGen.nextInt(16)];
 			currentPosition = currentPosition.nextPosition(nextDir);
+			distanceToTarget = euclideanDist(target.latitude, target.longitude, currentPosition.latitude, currentPosition.longitude);
 			power -= 2.5;
 			getInRange();
 			updateStatus();
@@ -93,6 +108,7 @@ public class Stateful extends Drone {
 		} else {
 			Direction nextDir = nextPossibleMoves.get(randNumGen.nextInt(nextPossibleMoves.size()));
 			currentPosition = currentPosition.nextPosition(nextDir);
+			distanceToTarget = euclideanDist(target.latitude, target.longitude, currentPosition.latitude, currentPosition.longitude);
 			power -= 2.5;
 			getInRange();
 			updateStatus();
