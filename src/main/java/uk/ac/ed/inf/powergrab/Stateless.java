@@ -8,9 +8,10 @@ public class Stateless extends Drone {
 	
 	public Stateless(Position initialPosition, Random randNumGen) {
 		super(initialPosition, randNumGen);
+		getInRange();
 	}
 	
-	private void getInRange() {
+	protected void getInRange() {
 		for (POI feature : App.POIs) {
 			double distance = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
 			if (distance <= 0.00025)
@@ -33,8 +34,8 @@ public class Stateless extends Drone {
 			boolean danger = false;
 			boolean lighthouse = false;
 			
-			double closestLighthouse = 0.00025;
-			double closestDanger = 0.00026;
+			double closestLighthouse = Integer.MAX_VALUE;
+			double closestDanger = Integer.MAX_VALUE;
 			
 			if (nextPos.inPlayArea()) {
 				for (POI feature : inMoveRange) {
@@ -67,6 +68,7 @@ public class Stateless extends Drone {
 		this.inMoveRange = new ArrayList<>();
 		this.inRange = new ArrayList<>();
 		
+		// choose based on benefit.
 		if (!lighthousesInMoveRange.isEmpty()) {
 			Direction nextDir = lighthousesInMoveRange.get(randNumGen.nextInt(lighthousesInMoveRange.size()));
 			currentPosition = currentPosition.nextPosition(nextDir);

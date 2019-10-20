@@ -19,6 +19,15 @@ public class Drone {
 		this.randNumGen = randNumGen;
 	}
 	
+	protected void getInRange() {
+		for (POI feature : App.POIs) {
+			double distance = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
+			if (distance <= 0.00025)
+				inRange.add(feature);
+		}
+		return;
+	}
+	
 	protected void updateStatus() {
 		POI closestPOI = null;
 		double minDist = 0.00025;

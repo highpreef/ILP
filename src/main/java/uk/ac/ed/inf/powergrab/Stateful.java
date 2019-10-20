@@ -13,15 +13,6 @@ public class Stateful extends Drone {
 		getNextTarget();
 	}
 	
-	private void getInRange() {
-		for (POI feature : App.POIs) {
-			double distance = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
-			if (distance <= 0.00025)
-				inRange.add(feature);
-		}
-		return;
-	}
-	
 	// check for edge case where drone spawns on lighthouse
 	private void loadTargets() {
 		for (POI feature : App.POIs) {
@@ -67,6 +58,7 @@ public class Stateful extends Drone {
 
 		double distanceToTarget = euclideanDist(target.latitude, target.longitude, currentPosition.latitude, currentPosition.longitude);
 		double minDistToTarget = Integer.MAX_VALUE;
+		double minSafeDistToTarget = Integer.MAX_VALUE;
 		ArrayList<Direction> nextPossibleMoves = new ArrayList<>();
 		
 		for (Direction d : Direction.values()) {
@@ -83,13 +75,11 @@ public class Stateful extends Drone {
 //				}
 				
 				if (!danger && (nextDistToTarget < distanceToTarget)) {
-					if (nextDistToTarget < minDistToTarget) {
+					if (nextDistToTarget <= minDistToTarget) {
 						minDistToTarget = nextDistToTarget;
 						nextPossibleMoves.clear();
 						nextPossibleMoves.add(d);
-					} else if (nextDistToTarget == minDistToTarget) {
-						nextPossibleMoves.add(d);
-					}
+					} 
 				}
 			}
 		}
