@@ -48,16 +48,16 @@ public class Stateful extends Drone {
 	}
 	
 	public Direction makeMove() {
-		if (target == null) {
-			power -= 2.5;
-			move++;
-			return Direction.N;
-		}
-			
+		//temporary// 
+		if (target == null) {//
+			power -= 2.5;//
+			move++; //
+			return Direction.N; //
+		} //
+		//temporary//
 		move++;
 
 		double distanceToTarget = euclideanDist(target.latitude, target.longitude, currentPosition.latitude, currentPosition.longitude);
-		double minDistToTarget = Integer.MAX_VALUE;
 		double minSafeDistToTarget = Integer.MAX_VALUE;
 		ArrayList<Direction> nextPossibleMoves = new ArrayList<>();
 		
@@ -67,19 +67,21 @@ public class Stateful extends Drone {
 			boolean danger = false;
 			
 			if (nextPos.inPlayArea()) {
-//				for (POI feature : App.POIs) {
-//					double distanceToFeature = euclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
-//					if (distanceToFeature <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
-//						danger = true;
-//					}
-//				}
+				for (POI feature : App.POIs) {
+					double distanceToFeature = euclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
+					if (distanceToFeature <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
+						danger = true;
+					}
+				}
 				
-				if (!danger && (nextDistToTarget < distanceToTarget)) {
-					if (nextDistToTarget <= minDistToTarget) {
-						minDistToTarget = nextDistToTarget;
+				if (!danger) {
+					if (nextDistToTarget < minSafeDistToTarget) {
+						minSafeDistToTarget = nextDistToTarget;
 						nextPossibleMoves.clear();
 						nextPossibleMoves.add(d);
-					} 
+					} else if (nextDistToTarget == minSafeDistToTarget) {
+						nextPossibleMoves.add(d);
+					}
 				}
 			}
 		}
