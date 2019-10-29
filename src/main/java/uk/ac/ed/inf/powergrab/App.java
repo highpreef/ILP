@@ -77,15 +77,41 @@ public class App {
 		return String.format("%f,%f,%s,%f,%f,%f,%f", firstPos.latitude, firstPos.longitude, direction, secondPos.latitude, secondPos.longitude, coins, power);
 	}
 	
-    public static void main(String[] args) {
-    	String day = args[0];
-    	String month = args[1];
-    	String year = args[2];
-    	String mapString = String.format("http://homepages.inf.ed.ac.uk/stg/powergrab/%s/%s/%s/powergrabmap.geojson", year, month, day);
-    	String mapSource = "";
-    	
-    	try {
-			URL mapUrl = new URL(mapString);
+	private static Drone initDrone(Position initialPosition, Random randNumGen, String droneType) {
+		if (droneType.equals("stateless"))
+			return new Stateless(initialPosition, randNumGen);
+		else if (droneType.equals("stateful"))
+			return new Stateful(initialPosition, randNumGen);
+		else
+			throw new IllegalArgumentException("Invalid Arguments!");
+	}
+	
+	private static String arrayToString(ArrayList<String> moveList) {
+		String moves = moveList.get(0);
+		for (int i = 1; i < moveList.size(); i++)
+			moves = moves.concat("\n" + moveList.get(i));
+		return moves;
+	}
+	
+	private static String computeMoveSequence(Drone drone, ArrayList<Point> points) {
+		ArrayList<String> moveList = new ArrayList<>();
+		
+		while (drone.hasPower() && drone.move < 250) {
+			Position firstPos = drone.currentPosition;
+			Direction move = drone.makeMove();
+			Position secondPos = drone.currentPosition;
+			String text = formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
+			points.add(Point.fromLngLat(drone.currentPosition.longitude, drone.currentPosition.latitude));
+			moveList.add(text);
+		}
+		
+		return arrayToString(moveList);
+	}
+	
+	private static String getMapSource(String url) {
+		String mapSource = null;
+		try {
+			URL mapUrl = new URL(url);
 			HttpURLConnection conn = (HttpURLConnection) mapUrl.openConnection();
 			conn.setReadTimeout(10000);
 			conn.setConnectTimeout(15000);
@@ -94,66 +120,57 @@ public class App {
 			conn.connect();
 			InputStream inputStream = conn.getInputStream();
 			mapSource = inputStreamToString(inputStream);
-			parseFeatures(mapSource);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		if (mapSource != null)
+			return mapSource;
+		else
+			throw new IllegalArgumentException("Invalid map from url!");
+	}
+	
+	private static void writeToFile(String fileName, String text) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+			writer.write(text);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return;
+	}
+	
+    public static void main(String[] args) {
+    	String day = args[0];
+    	String month = args[1];
+    	String year = args[2];
+    	String mapString = String.format("http://homepages.inf.ed.ac.uk/stg/powergrab/%s/%s/%s/powergrabmap.geojson", year, month, day);
     	
+    	String mapSource = getMapSource(mapString);
+    	parseFeatures(mapSource);
+    	   	
     	double latitude = Double.parseDouble(args[3]);
     	double longitude = Double.parseDouble(args[4]);
     	int seed = Integer.parseInt(args[5]);
     	String droneType = args[6];
+    	
     	Random generator = new Random(seed);
     	Position initialPosition = new Position(latitude, longitude);
-    	
-    	ArrayList<String> moveList = new ArrayList<>();
+    		
     	ArrayList<Point> points = new ArrayList<>();
     	points.add(Point.fromLngLat(longitude, latitude));
     	
-    	if (droneType.equals("stateless")) {
-    		Stateless drone = new Stateless(initialPosition, generator);
-    		while (drone.hasPower() && drone.move < 250) {
-    			Position firstPos = drone.currentPosition;
-    			Direction move = drone.makeMove();
-    			Position secondPos = drone.currentPosition;
-    			String text = formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
-    			points.add(Point.fromLngLat(drone.currentPosition.longitude, drone.currentPosition.latitude));
-    			moveList.add(text);
-    		}
-    	} else if (droneType.equals("stateful")) {
-    		Stateful drone = new Stateful(initialPosition, generator);
-    		while (drone.hasPower() && drone.move < 250) {
-    			Position firstPos = drone.currentPosition;
-    			Direction move = drone.makeMove();
-    			Position secondPos = drone.currentPosition;
-    			String text = formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
-    			points.add(Point.fromLngLat(drone.currentPosition.longitude, drone.currentPosition.latitude));
-    			moveList.add(text);
-    		}
-    	}
+    	Drone drone = initDrone(initialPosition, generator, droneType);
+    	String moves = computeMoveSequence(drone, points);
+       	String textFileName = String.format("%s-%s-%s-%s.txt", droneType, day, month, year);
     	
-    	String textFileName = String.format("%s-%s-%s-%s.txt", droneType, day, month, year);
-    	
-    	try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(textFileName));
-			for (String str : moveList)
-				writer.write(str + "\n");
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    	writeToFile(textFileName, moves);
     	
     	String jsonFileName = String.format("%s-%s-%s-%s.geojson", droneType, day, month, year);  	
     	String jsonFile = buildJsonFile(mapSource, points);
     	
-    	try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFileName));
-			writer.write(jsonFile);
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    	writeToFile(jsonFileName, jsonFile);
     }
 }

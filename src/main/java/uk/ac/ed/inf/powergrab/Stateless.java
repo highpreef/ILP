@@ -45,7 +45,7 @@ public class Stateless extends Drone {
 						if (distance <= closestLighthouse) {
 							closestLighthouse = distance;
 						}
-					} else if (distance <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
+					} if (distance <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
 						danger = true;
 						if (distance <= closestDanger) {
 							closestDanger = distance;

@@ -3,7 +3,7 @@ package uk.ac.ed.inf.powergrab;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Drone {
+public abstract class Drone {
 	protected Position currentPosition;
 	protected float coins;
 	protected float power;
@@ -27,6 +27,8 @@ public class Drone {
 		}
 		return;
 	}
+	
+	abstract Direction makeMove();
 	
 	protected void updateStatus() {
 		POI closestPOI = null;
@@ -71,7 +73,7 @@ public class Drone {
 	}
 	
 	protected double euclideanDist(double xLat, double xLong, double yLat, double yLong) {
-		return Math.sqrt(Math.pow(xLat - yLat, 2) + Math.pow(xLong - yLong, 2));
+		return Math.sqrt((xLat - yLat) * (xLat - yLat) + (xLong - yLong) * (xLong - yLong));
 	}
 
 }

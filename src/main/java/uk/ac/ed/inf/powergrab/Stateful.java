@@ -13,16 +13,14 @@ public class Stateful extends Drone {
 		getNextTarget();
 	}
 	
-	// check for edge case where drone spawns on lighthouse
 	private void loadTargets() {
 		for (POI feature : App.POIs) {
-			double distance = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
-			if (distance > 0.00025 && feature.symbol.equals("lighthouse") && (feature.coins > 0 || feature.power > 0))
+			if (feature.symbol.equals("lighthouse") && (feature.coins > 0 || feature.power > 0))
 				unvisitedPOIs.add(feature);
 		}
 		return;
 	}
-	
+	// if closest lighthouse has 0 and second closest has more than 0 to which one does the drone connect
 	private void getNextTarget() {
 		if (!unvisitedPOIs.isEmpty()) {
 			POI nearestPOIs = unvisitedPOIs.get(0);
@@ -65,16 +63,31 @@ public class Stateful extends Drone {
 			Position nextPos = currentPosition.nextPosition(d);
 			double nextDistToTarget = euclideanDist(target.latitude, target.longitude, nextPos.latitude, nextPos.longitude);
 			boolean danger = false;
+			boolean lighthouse = false;
+			
+			double closestLighthouse = Integer.MAX_VALUE;
+			String closestLighthouseId = null;
+			double closestDanger = Integer.MAX_VALUE;
 			
 			if (nextPos.inPlayArea()) {
 				for (POI feature : App.POIs) {
-					double distanceToFeature = euclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);
-					if (distanceToFeature <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
+					double distanceToFeature = euclideanDist(feature.latitude, feature.longitude, nextPos.latitude, nextPos.longitude);	
+						
+					if (distanceToFeature <= 0.00025 && feature.symbol.equals("lighthouse") && (feature.coins > 0 || feature.power > 0)) {
+						lighthouse = true;
+						if (distanceToFeature <= closestLighthouse) {
+							closestLighthouse = distanceToFeature;
+							closestLighthouseId = feature.id;
+						}
+					} if (distanceToFeature <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
 						danger = true;
+						if (distanceToFeature <= closestDanger) {
+							closestDanger = distanceToFeature;
+						}
 					}
 				}
 				
-				if (!danger) {
+				if ((!danger || (danger && lighthouse && (closestLighthouse < closestDanger))) && (!(nextDistToTarget <= 0.00025) || closestLighthouseId.equals(target.id))) {
 					if (nextDistToTarget < minSafeDistToTarget) {
 						minSafeDistToTarget = nextDistToTarget;
 						nextPossibleMoves.clear();
@@ -93,7 +106,7 @@ public class Stateful extends Drone {
 			power -= 2.5;
 			getInRange();
 			updateStatus();
-			if (distanceToTarget < 0.00025) {
+			if (distanceToTarget < 0.00025 && !(target.coins > 0 && target.power > 0)) {
 				getNextTarget();
 			}
 			return nextDir;
@@ -101,10 +114,11 @@ public class Stateful extends Drone {
 			Direction nextDir = nextPossibleMoves.get(randNumGen.nextInt(nextPossibleMoves.size()));
 			currentPosition = currentPosition.nextPosition(nextDir);
 			distanceToTarget = euclideanDist(target.latitude, target.longitude, currentPosition.latitude, currentPosition.longitude);
+			
 			power -= 2.5;
 			getInRange();
 			updateStatus();
-			if (distanceToTarget < 0.00025) {
+			if (distanceToTarget < 0.00025 && !(target.coins > 0 && target.power > 0)) {	
 				getNextTarget();
 			}
 			return nextDir;
