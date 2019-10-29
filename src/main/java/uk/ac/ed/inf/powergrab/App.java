@@ -40,6 +40,7 @@ public class App {
 			String color = feature.getProperty("marker-color").getAsString();
 			POIs.add(new POI(id, latitude, longitude, coins, power, symbol, color));
 		}
+		return;
 	}
 	
 	private static String inputStreamToString(InputStream inputStream) {
