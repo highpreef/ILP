@@ -96,14 +96,16 @@ public class App {
 	
 	private static String computeMoveSequence(Drone drone, ArrayList<Point> points) {
 		ArrayList<String> moveList = new ArrayList<>();
+		int moveNo = 0;
 		
-		while (drone.hasPower() && drone.move < 250) {
+		while (drone.hasPower() && moveNo < 250) {
 			Position firstPos = drone.currentPosition;
 			Direction move = drone.makeMove();
 			Position secondPos = drone.currentPosition;
 			String text = formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
 			points.add(Point.fromLngLat(drone.currentPosition.longitude, drone.currentPosition.latitude));
 			moveList.add(text);
+			moveNo++;
 		}
 		
 		return arrayToString(moveList);

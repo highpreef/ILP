@@ -12,6 +12,8 @@ public class Stateless extends Drone {
 	}
 	
 	protected void getInRange() {
+		this.inRange.clear();
+		this.inMoveRange.clear();
 		for (POI feature : App.POIs) {
 			double distance = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude, currentPosition.longitude);
 			if (distance <= 0.00025)
@@ -22,9 +24,16 @@ public class Stateless extends Drone {
 		return;
 	}
 	
+	private Direction updateState(ArrayList<Direction> moveList) {
+		Direction nextDir = moveList.get(randNumGen.nextInt(moveList.size()));
+		currentPosition = currentPosition.nextPosition(nextDir);
+		power -= 2.5;		
+		getInRange();
+		updateStatus();
+		return nextDir;
+	}
+	
 	public Direction makeMove() {	
-		move++;
-		
 		ArrayList<Direction> randomValidMoves = new ArrayList<>();
 		ArrayList<Direction> safeMoves = new ArrayList<>();
 		ArrayList<Direction> lighthousesInMoveRange = new ArrayList<>();
@@ -45,51 +54,31 @@ public class Stateless extends Drone {
 						if (distance <= closestLighthouse) {
 							closestLighthouse = distance;
 						}
-					} if (distance <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
+					} else if (distance <= 0.00025 && feature.symbol.equals("danger") && (feature.coins < 0 || feature.power < 0)) {
 						danger = true;
 						if (distance <= closestDanger) {
 							closestDanger = distance;
 						}
 					}
 				}
-				if (lighthouse && danger) {
-					if (closestLighthouse < closestDanger) {
-						lighthousesInMoveRange.add(d);
-					} 
-				} else if (lighthouse) {
+				if (lighthouse && danger && closestLighthouse < closestDanger) {
 					lighthousesInMoveRange.add(d);
-				}
-				if (!danger)
+				} else if (lighthouse && !danger) {
+					lighthousesInMoveRange.add(d);
+				} else if (!danger) {
 					safeMoves.add(d);
+				}				
 				randomValidMoves.add(d);
 			}
 		}
 		
-		this.inMoveRange = new ArrayList<>();
-		this.inRange = new ArrayList<>();
-		
 		// choose based on benefit.
 		if (!lighthousesInMoveRange.isEmpty()) {
-			Direction nextDir = lighthousesInMoveRange.get(randNumGen.nextInt(lighthousesInMoveRange.size()));
-			currentPosition = currentPosition.nextPosition(nextDir);
-			power -= 2.5;
-			getInRange();
-			updateStatus();
-			return nextDir;
+			return updateState(lighthousesInMoveRange);
 		} else if (lighthousesInMoveRange.isEmpty() && !safeMoves.isEmpty()) {
-			Direction nextDir = safeMoves.get(randNumGen.nextInt(safeMoves.size()));
-			currentPosition = currentPosition.nextPosition(nextDir);
-			power -= 2.5;		
-			getInRange();
-			updateStatus();
-			return nextDir;
+			return updateState(safeMoves);
 		} else {
-			Direction nextDir = randomValidMoves.get(randNumGen.nextInt(randomValidMoves.size()));
-			currentPosition = currentPosition.nextPosition(nextDir);
-			power -= 2.5;
-			getInRange();
-			updateStatus();
-			return nextDir;
+			return updateState(randomValidMoves);
 		}
 	}
 }

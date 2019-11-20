@@ -7,15 +7,13 @@ public abstract class Drone {
 	protected Position currentPosition;
 	protected float coins;
 	protected float power;
-	protected int move;
 	protected Random randNumGen;
 	protected ArrayList<POI> inRange = new ArrayList<>();
 	
-	public Drone(Position initialPosition, Random randNumGen) {
+	protected Drone(Position initialPosition, Random randNumGen) {
 		this.currentPosition = initialPosition;
 		this.coins = 0;
 		this.power = 250;
-		this.move = 0;
 		this.randNumGen = randNumGen;
 	}
 	
