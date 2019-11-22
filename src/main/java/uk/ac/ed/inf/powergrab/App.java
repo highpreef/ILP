@@ -95,6 +95,26 @@ public class App {
 		return moves;
 	}
 
+	/**
+	 * This method will compute the move sequence of the drone on the target map.
+	 * Its inputs are the drone object and the list of points the drone visits
+	 * during its move sequence, which is passed by reference to this method. The
+	 * makeMove() method of the drone object will be called until the drone has made
+	 * 250 moves. It will stop the move sequence early if the drone runs out of
+	 * power before having made 250 moves. For each move the method will record the
+	 * starting position of the drone, the direction it took, its final position,
+	 * and its power and coins at the end of the move. It will output all of the
+	 * recorded information as a string, as well as updating the input point list
+	 * after every move. This method will be called in the main function.
+	 * 
+	 * @param drone  This is the drone object which will be used for computing the
+	 *               move sequence.
+	 * @param points This is the list of points that the drone will visit during its
+	 *               move sequence.
+	 * @return A string holding the current position of the drone, the direction it
+	 *         took, its final position, and its power and coins at the end of the
+	 *         move, for every move in the move sequence.
+	 */
 	private static String computeMoveSequence(Drone drone, ArrayList<Point> points) {
 		ArrayList<String> moveList = new ArrayList<>();
 		int moveNo = 0;
@@ -111,6 +131,16 @@ public class App {
 		return arrayToString(moveList);
 	}
 
+	/**
+	 * This method parses the target map information from a URL as a String. It
+	 * takes a URL as its input, which will contain the geojson file of the target
+	 * map. It handles errors from the URL reading and it will check for malformed
+	 * URLs. It will also raise an illegal argument exception if the output geojson
+	 * file is null. This method will be called in the main function.
+	 * 
+	 * @param url This is the URL containing the geojson file of the target map.
+	 * @return The geojson file for the target map as a string.
+	 */
 	private static String getMapSource(String url) {
 		String mapSource = null;
 		try {
@@ -131,9 +161,19 @@ public class App {
 		if (mapSource != null)
 			return mapSource;
 		else
-			throw new IllegalArgumentException("Invalid map from url!");
+			throw new IllegalArgumentException("Invalid map from URL!");
 	}
 
+	/**
+	 * This method writes an input String to a file and outputs that file. Its
+	 * inputs are a file name, which will be the output file name, and the text to
+	 * write to that file. This method handles any I/O exceptions arising from
+	 * writing to the output file, and it will be called in the main method.
+	 * 
+	 * @param fileName This is be the name of the output file created plus the file
+	 *                 extension.
+	 * @param text     This is the text that will be written to the output file.
+	 */
 	private static void writeToFile(String fileName, String text) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
@@ -145,6 +185,22 @@ public class App {
 		return;
 	}
 
+	/**
+	 * This is the main method. It will be called from the command line with 7
+	 * arguments which will act as inputs to the application. The input arguments
+	 * are ordered as follows: day, month and year of the target map, the latitude
+	 * and longitude for the starting position of the drone, the random seed and the
+	 * drone type.
+	 * 
+	 * The method will start by parsing all input arguments, after which it will get
+	 * the target map information. The specified drone type is then initialised as a
+	 * drone object and its movement sequence on the target map is then computed.
+	 * The output is written to two files: a text file describing the move sequence
+	 * of the drone and a geojson file storing the geographical locations of the
+	 * target map and the path the drone took during its move sequence.
+	 * 
+	 * @param args This is the 7 input arguments to the powergrab application.
+	 */
 	public static void main(String[] args) {
 		String day = args[0];
 		String month = args[1];
