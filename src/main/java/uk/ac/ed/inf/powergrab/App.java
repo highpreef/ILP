@@ -1,12 +1,10 @@
 package uk.ac.ed.inf.powergrab;
 
-
 import com.google.gson.*;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Feature;
-
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,10 +23,11 @@ import java.util.stream.Stream;
 
 public class App {
 	public static ArrayList<POI> POIs = new ArrayList<>();
-	
-	private static void parseFeatures(String mapSource) {	
+
+	private static void parseFeatures(String mapSource) {
 		FeatureCollection features = FeatureCollection.fromJson(mapSource);
 		List<Feature> featureList = features.features();
+
 		for (Feature feature : featureList) {
 			Point point = (Point) feature.geometry();
 			String id = feature.getProperty("id").getAsString();
@@ -42,42 +41,44 @@ public class App {
 		}
 		return;
 	}
-	
+
 	private static String inputStreamToString(InputStream inputStream) {
 		Stream<String> result = new BufferedReader(new InputStreamReader(inputStream)).lines();
 		return result.parallel().collect(Collectors.joining("\n"));
 	}
-	
+
 	private static String buildJsonFile(String mapSource, ArrayList<Point> points) {
 		JsonObject main = new JsonObject();
-    	main.addProperty("type", "FeatureCollection");
-    		
-    	JsonParser parser = new JsonParser();
-    	JsonObject jsonFile = (JsonObject) parser.parse(mapSource);
-    	JsonArray featureArray = jsonFile.get("features").getAsJsonArray();
+		main.addProperty("type", "FeatureCollection");
 
-    	LineString lineStringObject = LineString.fromLngLats(points);
-    	String lineStringJson = lineStringObject.toJson();
-    	
-    	JsonObject geometry = (JsonObject) parser.parse(lineStringJson);
+		JsonParser parser = new JsonParser();
+		JsonObject jsonFile = (JsonObject) parser.parse(mapSource);
+		JsonArray featureArray = jsonFile.get("features").getAsJsonArray();
 
-    	JsonObject lineString = new JsonObject();
-    	lineString.addProperty("type", "Feature");
-    	lineString.add("properties", new JsonObject());
-    	lineString.add("geometry", geometry);
-    	featureArray.add(lineString);
-    	
-    	main.add("features", featureArray);
-    	
-    	Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String prettyJson = gson.toJson(main);
-        return prettyJson;
+		LineString lineStringObject = LineString.fromLngLats(points);
+		String lineStringJson = lineStringObject.toJson();
+
+		JsonObject geometry = (JsonObject) parser.parse(lineStringJson);
+
+		JsonObject lineString = new JsonObject();
+		lineString.addProperty("type", "Feature");
+		lineString.add("properties", new JsonObject());
+		lineString.add("geometry", geometry);
+		featureArray.add(lineString);
+
+		main.add("features", featureArray);
+
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		String prettyJson = gson.toJson(main);
+		return prettyJson;
 	}
-	
-	private static String formatTextOutput(Position firstPos, Position secondPos, Direction direction, float coins, float power) {
-		return String.format("%f,%f,%s,%f,%f,%f,%f", firstPos.latitude, firstPos.longitude, direction, secondPos.latitude, secondPos.longitude, coins, power);
+
+	private static String formatTextOutput(Position firstPos, Position secondPos, Direction direction, float coins,
+			float power) {
+		return String.format("%f,%f,%s,%f,%f,%f,%f", firstPos.latitude, firstPos.longitude, direction,
+				secondPos.latitude, secondPos.longitude, coins, power);
 	}
-	
+
 	private static Drone initDrone(Position initialPosition, Random randNumGen, String droneType) {
 		if (droneType.equals("stateless"))
 			return new Stateless(initialPosition, randNumGen);
@@ -86,18 +87,18 @@ public class App {
 		else
 			throw new IllegalArgumentException("Invalid Arguments!");
 	}
-	
+
 	private static String arrayToString(ArrayList<String> moveList) {
 		String moves = moveList.get(0);
 		for (int i = 1; i < moveList.size(); i++)
 			moves = moves.concat("\n" + moveList.get(i));
 		return moves;
 	}
-	
+
 	private static String computeMoveSequence(Drone drone, ArrayList<Point> points) {
 		ArrayList<String> moveList = new ArrayList<>();
 		int moveNo = 0;
-		
+
 		while (drone.hasPower() && moveNo < 250) {
 			Position firstPos = drone.currentPosition;
 			Direction move = drone.makeMove();
@@ -107,10 +108,9 @@ public class App {
 			moveList.add(text);
 			moveNo++;
 		}
-		
 		return arrayToString(moveList);
 	}
-	
+
 	private static String getMapSource(String url) {
 		String mapSource = null;
 		try {
@@ -133,7 +133,7 @@ public class App {
 		else
 			throw new IllegalArgumentException("Invalid map from url!");
 	}
-	
+
 	private static void writeToFile(String fileName, String text) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
@@ -144,36 +144,37 @@ public class App {
 		}
 		return;
 	}
-	
-    public static void main(String[] args) {
-    	String day = args[0];
-    	String month = args[1];
-    	String year = args[2];
-    	String mapString = String.format("http://homepages.inf.ed.ac.uk/stg/powergrab/%s/%s/%s/powergrabmap.geojson", year, month, day);
-    	
-    	String mapSource = getMapSource(mapString);
-    	parseFeatures(mapSource);
-    	   	
-    	double latitude = Double.parseDouble(args[3]);
-    	double longitude = Double.parseDouble(args[4]);
-    	int seed = Integer.parseInt(args[5]);
-    	String droneType = args[6];
-    	
-    	Random generator = new Random(seed);
-    	Position initialPosition = new Position(latitude, longitude);
-    		
-    	ArrayList<Point> points = new ArrayList<>();
-    	points.add(Point.fromLngLat(longitude, latitude));
-    	
-    	Drone drone = initDrone(initialPosition, generator, droneType);
-    	String moves = computeMoveSequence(drone, points);
-       	String textFileName = String.format("%s-%s-%s-%s.txt", droneType, day, month, year);
-    	
-    	writeToFile(textFileName, moves);
-    	
-    	String jsonFileName = String.format("%s-%s-%s-%s.geojson", droneType, day, month, year);  	
-    	String jsonFile = buildJsonFile(mapSource, points);
-    	
-    	writeToFile(jsonFileName, jsonFile);
-    }
+
+	public static void main(String[] args) {
+		String day = args[0];
+		String month = args[1];
+		String year = args[2];
+		String mapString = String.format("http://homepages.inf.ed.ac.uk/stg/powergrab/%s/%s/%s/powergrabmap.geojson",
+				year, month, day);
+
+		String mapSource = getMapSource(mapString);
+		parseFeatures(mapSource);
+
+		double latitude = Double.parseDouble(args[3]);
+		double longitude = Double.parseDouble(args[4]);
+		int seed = Integer.parseInt(args[5]);
+		String droneType = args[6];
+
+		Random generator = new Random(seed);
+		Position initialPosition = new Position(latitude, longitude);
+
+		ArrayList<Point> points = new ArrayList<>();
+		points.add(Point.fromLngLat(longitude, latitude));
+
+		Drone drone = initDrone(initialPosition, generator, droneType);
+		String moves = computeMoveSequence(drone, points);
+		String textFileName = String.format("%s-%s-%s-%s.txt", droneType, day, month, year);
+
+		writeToFile(textFileName, moves);
+
+		String jsonFileName = String.format("%s-%s-%s-%s.geojson", droneType, day, month, year);
+		String jsonFile = buildJsonFile(mapSource, points);
+
+		writeToFile(jsonFileName, jsonFile);
+	}
 }

@@ -8,7 +8,7 @@ public class POI {
 	public float power;
 	public String symbol;
 	public String color;
-	
+
 	public POI(String id, double latitude, double longitude, float coins, float power, String symbol, String color) {
 		this.latitude = latitude;
 		this.longitude = longitude;
