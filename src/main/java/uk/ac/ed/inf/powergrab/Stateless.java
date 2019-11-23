@@ -95,7 +95,7 @@ public class Stateless extends Drone {
 	 * computes the direction the drone takes during its next move. First 3
 	 * ArrayLists are initialised: randomValidMoves, representing a set of
 	 * directions that are valid for the drone to take, safeMoves, representing a
-	 * set of direction where the drone won't charge to a danger station after its
+	 * set of directions where the drone won't charge to a danger station after its
 	 * move, and lighthousesInMoveRange, representing a set of directions where the
 	 * drone will charge to a lighthouse after its move.
 	 * 
@@ -106,11 +106,11 @@ public class Stateless extends Drone {
 	 * is a lighthouse or a danger and is within 0.00025 degrees of the next
 	 * position, asserting a respective boolean in that case. For each direction the
 	 * distance to the closest lighthouse and closest danger is also computed,
-	 * followed by adding that direction to the lighthousesInMoveRange if the drone
-	 * charges from a lighthouse after taking that direction, to the safeMoves
-	 * ArrayList if the drone doesn't charge from a danger after taking that
-	 * direction, and the randomValidMoves if the drone is still within the playing
-	 * area after taking that direction.
+	 * followed by adding that direction to the lighthousesInMoveRange ArrayList if
+	 * the drone charges from a lighthouse after taking that direction, to the
+	 * safeMoves ArrayList if the drone doesn't charge from a danger after taking
+	 * that direction, and the randomValidMoves ArrayList if the drone is still
+	 * within the playing area after taking that direction.
 	 * 
 	 * The updateState method is then called with one of the 3 ArrayLists. If the
 	 * lighthousesInMoveRange ArrayList is not empty the updateStatus method is

@@ -95,8 +95,8 @@ public class Stateful extends Drone {
 	 * danger and is within 0.00025 degrees of the next position, asserting a
 	 * boolean in that case. For each direction its value is added to the safeMoves
 	 * ArrayList if the drone doesn't charge from a danger after taking that
-	 * direction, and the validMoves if the drone is still within the playing area
-	 * after taking that direction.
+	 * direction, and the validMove ArrayList if the drone is still within the
+	 * playing area after taking that direction.
 	 * 
 	 * The updateState method is then called with one of the 2 ArrayLists. If the
 	 * safeMoves ArrayList is not empty the updateStatus method is called with it as
@@ -226,13 +226,51 @@ public class Stateful extends Drone {
 	}
 
 	/**
-	 * This method
-	 * @return
+	 * This method returns a boolean value representing whether the drone currently
+	 * has a target or not.
+	 * 
+	 * @return true if the drone target is not null or false if the drone target is
+	 *         null.
 	 */
 	private boolean hasTarget() {
 		return target != null;
 	}
 
+	/**
+	 * This method implements the abstract method declared in the superclass. It
+	 * computes the direction the drone takes during its next move. If the drone
+	 * currently doesn't have a target it returns the value from the getRandomMove
+	 * method, otherwise 2 ArrayLists are initialised: nextPossibleMoves,
+	 * representing a set of directions that minimise the distance from the drone to
+	 * the target while ensuring that the drone doesn't charge from a danger station
+	 * after its move, and randomValidMoves, representing a set of directions that
+	 * are valid for the drone to take.
+	 * 
+	 * The 16 cardinals directions are then iterated in a for loop. For each
+	 * direction the next position the drone would be in is computed and then all
+	 * features in the POIs ArrayList are iterated if the next position is within
+	 * the playing area. For each feature it is checked whether that feature is a
+	 * lighthouse or a danger and is within 0.00025 degrees of the next position,
+	 * asserting a respective boolean in that case. For each direction the distance
+	 * to the closest lighthouse and closest danger is also computed along with ID
+	 * of the closest lighthouse. For each direction the nextPossibleMoves ArrayList
+	 * is updated if a set of conditions is passed: There is no danger stations in
+	 * range or there are danger(s) and lighthouse(s) in range but the closest one
+	 * to the drone is a lighthouse, and if the target is in range the closest
+	 * lighthouse is the target, and if the drone hasn't just charged from its
+	 * target it doesn't backtrack to the position in its previous move. If these
+	 * conditions are passed then that direction is added to the nextPossibleMoves
+	 * ArrayList if the distance to the target is equal to the current shortest
+	 * distance, otherwise if the distance to the target is smaller the
+	 * nextPossibleMoves ArrayList is cleared first before adding to it. The
+	 * direction is also added to the randomValidMoves ArrayList if the drone is
+	 * still within the playing area after taking that direction.
+	 * 
+	 * The updateState method is then called with one of the 2 ArrayLists. If the
+	 * nextPossibleMoves ArrayList is not empty the updateStatus method is
+	 * called with it as its input, otherwise the updateStatus method is
+	 * called with the randomValidMoves ArrayList as its input.
+	 */
 	@Override
 	public Direction makeMove() {
 		move++;
