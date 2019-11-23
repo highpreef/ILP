@@ -24,12 +24,33 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * This class contains the main routine of the powergrab application. It is
+ * responsible for the I/O necessities of the application and for initialising
+ * all essential classes to the powergrab application.
+ * 
+ * @author David Jorge (s1712653)
+ *
+ */
 public class App {
 	public static ArrayList<POI> POIs = new ArrayList<>();
 	private static Logger logger;
 	private static float totalCoins = 0;
 	private static float coinsCollected = 0;
 
+	/**
+	 * This method parses the features, representing geographical locations, of the
+	 * target map from its map source. It takes a String representing the map source
+	 * of the target map as an input. It adds instances of the POI object, which
+	 * defines a single feature, to the global ArrayList POIs.
+	 * 
+	 * The FeatureCollection class is used to split the map source of the target map
+	 * into a List of Features. Each feature is then used to initialise a separate
+	 * instance of the POI class containing the ID, latitude and longitude, coins,
+	 * power, symbol and colour described by that feature.
+	 * 
+	 * @param mapSource
+	 */
 	private static void parseFeatures(String mapSource) {
 		FeatureCollection features = FeatureCollection.fromJson(mapSource);
 		List<Feature> featureList = features.features();
@@ -50,16 +71,49 @@ public class App {
 		return;
 	}
 
+	/**
+	 * This is a support method for the getMapSource method. It takes an InputStream
+	 * object resulting from a connection attempt to a URL, which contains the map
+	 * source of the target map. It outputs the map source as a String.
+	 * 
+	 * @param inputStream This is the InputStream object resulting from a connection
+	 *                    attempt to the URL containing the map source of the target
+	 *                    map.
+	 * @return A String representing the map source of the target map.
+	 */
 	private static String inputStreamToString(InputStream inputStream) {
 		Stream<String> result = new BufferedReader(new InputStreamReader(inputStream)).lines();
 		return result.parallel().collect(Collectors.joining("\n"));
 	}
-	
+
 	/**
+	 * This method builds a file, containing the geographical locations of the
+	 * target map plus the path that the drone took during its move sequence, with a
+	 * geojson type format. Its inputs are a String representing the map source for
+	 * the target map and an ArrayList of points, which is passed by reference and
+	 * represents the points the drone has visited in its move sequence. It outputs
+	 * a String, which represents the geographical locations of the target map plus
+	 * the path the drone took during its move sequence, in a geojson type format
+	 * which will be written directly to the output geojson file of the powergrab
+	 * application. This method will be called in the main method.
 	 * 
-	 * @param mapSource
-	 * @param points
-	 * @return
+	 * The geojson file content is built from scratch with JsonObjects and
+	 * JsonArrays. First a JsonObject representing the final geojson content is
+	 * created and the FeatureCollection property is added to it. Next the features
+	 * from the target map, representing geographical locations, are parsed into a
+	 * JsonArray using JsonParser. The LineString class is then used to create a
+	 * line string from the ArrayList of points and put at the end of the previously
+	 * created JsonArray. The JsonArray is then finally added to the main JsonObject
+	 * which is then converted to a String with the geojson format.
+	 * 
+	 * @param mapSource This is String representing the map source for the target
+	 *                  map.
+	 * @param points    This is the ArrayList of Points representing the points the
+	 *                  drone has visited during its move sequence.
+	 * @return A String, representing the features of the target map plus the path
+	 *         the drone took in its move sequence, in the geojson format. This
+	 *         String will be written directly to the geojson file which is output
+	 *         by the powergrab application.
 	 */
 	private static String buildJsonFile(String mapSource, ArrayList<Point> points) {
 		JsonObject main = new JsonObject();
@@ -109,8 +163,7 @@ public class App {
 	 *                  move.
 	 * @return A String reporting the initial and final position of a drone after
 	 *         making a move, the direction it took, and the total value of coins
-	 *         and power it holds after making a move. This String will be written
-	 *         to the output text file of the powergrab application.
+	 *         and power it holds after making a move.
 	 */
 	private static String formatTextOutput(Position firstPos, Position secondPos, Direction direction, float coins,
 			float power) {
@@ -119,9 +172,9 @@ public class App {
 	}
 
 	/**
-	 * This method will initialise the drone object. Its inputs are a position
-	 * object representing the drone's initial position, a random number generator
-	 * object, and a String representing the drone type. It outputs a drone object
+	 * This method initialises the drone object. Its inputs are a position object
+	 * representing the drone's initial position, a random number generator object,
+	 * and a String representing the drone type. It outputs a drone object
 	 * representing one of two possible types of drones: The Stateless drone or the
 	 * Stateful drone. This method handles any invalid argument errors arising from
 	 * a non-existing drone type. This method will be called in the main method.
@@ -262,9 +315,10 @@ public class App {
 	}
 
 	/**
-	 * This method is responsible for setting up the logger, which will be used
-	 * throughout the application for debugging and info reports. The level reported
-	 * by the logger can be modified here to aid debugging. This method will be
+	 * This method is responsible for initialising an instance of the Logger class,
+	 * which will be used throughout the application for debugging and information
+	 * reports. The level reported by the logger can be modified here to specify the
+	 * granularity of information reported to aid debugging. This method will be
 	 * called at the start of the main method.
 	 */
 	public static void setupLogger() {
@@ -332,6 +386,7 @@ public class App {
 		writeToFile(jsonFileName, jsonFile);
 		logger.fine("Write to geojson file successful");
 
-		logger.info(String.format("For target map (%s/%s/%s):\nCollected a total of %f out of %f coins", day, month, year, totalCoins, coinsCollected));
+		logger.info(String.format("For target map (%s/%s/%s):\nCollected a total of %f out of %f coins", day, month,
+				year, coinsCollected, totalCoins));
 	}
 }
