@@ -177,6 +177,7 @@ public class Stateful extends Drone {
 			target = unvisitedPOIs.get(randNumGen.nextInt(unvisitedPOIs.size()));
 			unvisitedPOIs.add(temp);
 			stuckCounter = 0;
+			logger.finer(String.format("Drone wasn't able to charge from target %s in 20 moves, switching to new target %s", temp.id, target.id));
 		}
 		prevPos = currentPosition;
 

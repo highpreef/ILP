@@ -186,6 +186,7 @@ public class App {
 	 * @param droneType       This is a String representing the drone type. Only
 	 *                        accepted drone types are "Stateless" or "Stateful".
 	 * @return A drone object representing the selected drone type.
+	 * @throws IllegalArgumentException if drone type is invalid.
 	 */
 	private static Drone initDrone(Position initialPosition, Random randNumGen, String droneType) {
 		if (droneType.equals("stateless")) {
