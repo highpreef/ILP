@@ -13,11 +13,11 @@ public class Position {
 	public final double r = 0.0003;
 
 	/**
-	 * Constructor for the Position class. It stores the latitude and longitude of
-	 * the position.
+	 * Constructor for the Position class. It stores the latitude and longitude of a
+	 * 2D point
 	 * 
-	 * @param latitude  Latitude of the position.
-	 * @param longitude Longitude of the position.
+	 * @param latitude  Latitude of the 2D point.
+	 * @param longitude Longitude of the 2D point.
 	 */
 	public Position(double latitude, double longitude) {
 		this.latitude = latitude;

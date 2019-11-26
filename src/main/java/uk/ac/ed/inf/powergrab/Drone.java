@@ -103,7 +103,7 @@ public abstract class Drone {
 	 */
 	protected void updateStatus() {
 		POI closestPOI = null;
-		double minDist = Integer.MAX_VALUE;
+		double minDist = 0.00025;
 		for (POI feature : inRange) {
 			double dist = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude,
 					currentPosition.longitude);
@@ -117,14 +117,14 @@ public abstract class Drone {
 			if (closestPOI.symbol.equals("lighthouse")) {
 				this.coins += closestPOI.coins;
 				this.power += closestPOI.power;
-				logger.finer(String.format("Gained %f coins from id %s during move %d", closestPOI.coins, closestPOI.id,
+				logger.fine(String.format("Gained %.2f coins from id %s during move %d", closestPOI.coins, closestPOI.id,
 						move));
 				closestPOI.coins = 0;
 				closestPOI.power = 0;
 			} else if (closestPOI.symbol.equals("danger")) {
 				double coinDif = this.coins + closestPOI.coins;
 				double powerDif = this.power + closestPOI.power;
-				logger.finer(String.format("Lost %f coins from id %s during move %d", -closestPOI.coins, closestPOI.id,
+				logger.fine(String.format("Lost %.2f coins from id %s during move %d", -closestPOI.coins, closestPOI.id,
 						move));
 				if (coinDif < 0) {
 					this.coins = 0;

@@ -6,12 +6,8 @@ import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Feature;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,8 +17,6 @@ import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class contains the main routine of the powergrab application. It is
@@ -69,21 +63,6 @@ public class App {
 				totalCoins += coins;
 		}
 		return;
-	}
-
-	/**
-	 * This is a support method for the getMapSource method. It takes an InputStream
-	 * object resulting from a connection attempt to a URL, which contains the map
-	 * source of the target map. It outputs the map source as a String.
-	 * 
-	 * @param inputStream This is the InputStream object resulting from a connection
-	 *                    attempt to the URL containing the map source of the target
-	 *                    map.
-	 * @return A String representing the map source of the target map.
-	 */
-	private static String inputStreamToString(InputStream inputStream) {
-		Stream<String> result = new BufferedReader(new InputStreamReader(inputStream)).lines();
-		return result.parallel().collect(Collectors.joining("\n"));
 	}
 
 	/**
@@ -142,36 +121,6 @@ public class App {
 	}
 
 	/**
-	 * This is a support method for the computeMoveSequence method. Its inputs are a
-	 * Position object representing the initial position of the drone before a move,
-	 * a Position object representing the final position of the drone after a move,
-	 * the direction the drone went to during the move, and the total value of the
-	 * drone's coins and power after the move. It outputs a String encapsulating all
-	 * the information from the inputs, which will be written in each new line of
-	 * the output text file of the powergrab application, thus it follows the format
-	 * specified by the design specifications.
-	 * 
-	 * @param firstPos  This is the Position object containing the latitude and
-	 *                  longitude of the drone before making a move.
-	 * @param secondPos This is the Position object containing the latitude and
-	 *                  longitude of the drone after making a move.
-	 * @param direction This is one of the 16 cardinal directions the drone took
-	 *                  during a move.
-	 * @param coins     This is the total value of coins the drone holds after a
-	 *                  move.
-	 * @param power     This is the total value of power the drone holds after a
-	 *                  move.
-	 * @return A String reporting the initial and final position of a drone after
-	 *         making a move, the direction it took, and the total value of coins
-	 *         and power it holds after making a move.
-	 */
-	private static String formatTextOutput(Position firstPos, Position secondPos, Direction direction, float coins,
-			float power) {
-		return String.format("%f,%f,%s,%f,%f,%f,%f", firstPos.latitude, firstPos.longitude, direction,
-				secondPos.latitude, secondPos.longitude, coins, power);
-	}
-
-	/**
 	 * This method initialises the drone object. Its inputs are a position object
 	 * representing the drone's initial position, a random number generator object,
 	 * and a String representing the drone type. It outputs a drone object
@@ -201,25 +150,6 @@ public class App {
 	}
 
 	/**
-	 * This is a support method for the computeMoveSequence method. It takes an
-	 * input ArrayList of type String representing the output created for each move
-	 * in the move sequence. It outputs a String that will be written to the output
-	 * text file following its design specifications where each output String for
-	 * every move has to be in a new line.
-	 * 
-	 * @param moveList This is the ArrayList of type String containing the output
-	 *                 String created after every move in the move sequence.
-	 * @return A String where each String in the ArrayList is separated by a new
-	 *         line.
-	 */
-	private static String arrayToString(ArrayList<String> moveList) {
-		String moves = moveList.get(0);
-		for (int i = 1; i < moveList.size(); i++)
-			moves = moves.concat("\n" + moveList.get(i));
-		return moves;
-	}
-
-	/**
 	 * This method will compute the move sequence of the drone on the target map.
 	 * Its inputs are the drone object and an ArrayList of points the drone visits
 	 * during its move sequence, which is passed by reference to this method. The
@@ -246,13 +176,13 @@ public class App {
 			Position firstPos = drone.currentPosition;
 			Direction move = drone.makeMove();
 			Position secondPos = drone.currentPosition;
-			String text = formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
+			String text = AppUtil.formatTextOutput(firstPos, secondPos, move, drone.coins, drone.power);
 			points.add(Point.fromLngLat(drone.currentPosition.longitude, drone.currentPosition.latitude));
 			moveList.add(text);
 		}
 		logger.fine("Drone path computed successfully");
 		coinsCollected = drone.coins;
-		return arrayToString(moveList);
+		return AppUtil.arrayToString(moveList);
 	}
 
 	/**
@@ -276,7 +206,7 @@ public class App {
 			conn.setDoInput(true);
 			conn.connect();
 			InputStream inputStream = conn.getInputStream();
-			mapSource = inputStreamToString(inputStream);
+			mapSource = AppUtil.inputStreamToString(inputStream);
 		} catch (MalformedURLException e) {
 			logger.severe("Input URL is malformed!");
 			e.printStackTrace();
@@ -293,28 +223,6 @@ public class App {
 	}
 
 	/**
-	 * This method writes an input String to a file and outputs that file. Its
-	 * inputs are a file name, which will be the output file name, and the text to
-	 * write to that file. This method handles any I/O exceptions arising from
-	 * writing to the output file, and it will be called in the main method.
-	 * 
-	 * @param fileName This is be the name of the output file created plus the file
-	 *                 extension.
-	 * @param text     This is the text that will be written to the output file.
-	 */
-	private static void writeToFile(String fileName, String text) {
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
-			writer.write(text);
-			writer.close();
-		} catch (IOException e) {
-			logger.severe("Writing to file failed!");
-			e.printStackTrace();
-		}
-		return;
-	}
-
-	/**
 	 * This method is responsible for initialising an instance of the Logger class,
 	 * which will be used throughout the application for debugging and information
 	 * reports. The level reported by the logger can be modified here to specify the
@@ -327,6 +235,9 @@ public class App {
 		Logger rootLogger = Logger.getLogger("");
 		Handler handler = rootLogger.getHandlers()[0];
 		handler.setLevel(Level.INFO);
+
+		AppUtil.setupLogger();
+		FileOutput.setupLogger();
 		return;
 	}
 
@@ -377,16 +288,16 @@ public class App {
 		String moves = computeMoveSequence(drone, points);
 		String textFileName = String.format("%s-%s-%s-%s.txt", droneType, day, month, year);
 
-		writeToFile(textFileName, moves);
+		FileOutput.writeToFile(textFileName, moves);
 		logger.fine("Write to text file successful");
 
 		String jsonFileName = String.format("%s-%s-%s-%s.geojson", droneType, day, month, year);
 		String jsonFile = buildJsonFile(mapSource, points);
 
-		writeToFile(jsonFileName, jsonFile);
+		FileOutput.writeToFile(jsonFileName, jsonFile);
 		logger.fine("Write to geojson file successful");
 
-		logger.info(String.format("For target map (%s/%s/%s):\nCollected a total of %f out of %f coins", day, month,
+		logger.info(String.format("For target map (%s/%s/%s):\nCollected a total of %.2f out of %.2f coins", day, month,
 				year, coinsCollected, totalCoins));
 	}
 }
