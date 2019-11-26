@@ -13,11 +13,10 @@ import java.util.Random;
  */
 public class Stateful extends Drone {
 	private POI target;
-	private Direction previousDir;
-	private int threshold = 0;
 	private Position prevPos = new Position(0, 0);
 	private boolean hasJustCharged = false;
 	private ArrayList<POI> unvisitedPOIs = new ArrayList<>();
+	private int stuckCounter = 0;
 
 	/**
 	 * Constructor of the Stateful drone class. It is executed when a new instance
@@ -147,15 +146,13 @@ public class Stateful extends Drone {
 	 * 
 	 * If the size of the input moveList ArrayList is larger than 1 the pseudo
 	 * random number generator is used to randomly choose which direction the drone
-	 * takes. If the drone is not in its first move then this method also checks
-	 * whether the drone has gone back and forth between the same 2 positions 3
-	 * times. If that happens the current target is put back into the unvisitedPOIs
-	 * ArrayList and the next closest target is selected. The chosen direction and
-	 * position are then stored, followed by updating the next position of the drone
-	 * with the nextPosition method of the Position class, the power value is
-	 * deducted for the move, and the getInRange and updateStatus methods are called
-	 * to update the stations now visible by the drone and charge from the closest
-	 * station in range if one exists.
+	 * takes. If the drone hasn't reached its target in 20 moves, a new randomly
+	 * chosen target will be loaded. The chosen direction and position are then
+	 * stored, followed by updating the next position of the drone with the
+	 * nextPosition method of the Position class, the power value is deducted for
+	 * the move, and the getInRange and updateStatus methods are called to update
+	 * the stations now visible by the drone and charge from the closest station in
+	 * range if one exists.
 	 * 
 	 * If the drone currently has a target then this method check if the target has
 	 * been charged from during the move, if so it calls the getNextTarget method
@@ -175,19 +172,12 @@ public class Stateful extends Drone {
 		Direction nextDir = moveList.get(randNumGen.nextInt(moveList.size()));
 		logger.finer(String.format("Drone went in direction %s during move %d", nextDir, move));
 
-		if (previousDir != null && hasTarget() && threshold < 3) {
-			logger.finest(String.format("Backtracking detected during move %d", move));
-			if (nextDir.angle == ((previousDir.angle + 180) % 361))
-				threshold++;
-		} else if (threshold == 3) {
-			logger.finer(
-					String.format("Continuous backtracking to previous move exceeded threshold during move %d", move));
+		if (stuckCounter == 20 && !unvisitedPOIs.isEmpty()) {
 			POI temp = target;
-			getNextTarget();
+			target = unvisitedPOIs.get(randNumGen.nextInt(unvisitedPOIs.size()));
 			unvisitedPOIs.add(temp);
-			threshold = 0;
+			stuckCounter = 0;
 		}
-		previousDir = nextDir;
 		prevPos = currentPosition;
 
 		currentPosition = currentPosition.nextPosition(nextDir);
@@ -196,13 +186,12 @@ public class Stateful extends Drone {
 		updateStatus();
 
 		if (hasTarget()) {
-			double distanceToTarget = euclideanDist(target.latitude, target.longitude, currentPosition.latitude,
-					currentPosition.longitude);
-			if (distanceToTarget < 0.00025 && !(target.coins > 0 && target.power > 0)) {
+			if (!(target.coins > 0 && target.power > 0)) {
 				getNextTarget();
 				hasJustCharged = true;
+				stuckCounter = 0;
 				logger.finer(String.format("Drone charged from target during move %d", move));
-			} else if (distanceToTarget > 0.00025) {
+			} else {
 				double closestLighthouse = Integer.MAX_VALUE;
 				POI closestPOI = null;
 				for (POI feature : inRange) {
@@ -220,6 +209,7 @@ public class Stateful extends Drone {
 					logger.finer(String.format("Drone charged from non-target id %s during move %d", closestPOI, move));
 				}
 				hasJustCharged = false;
+				stuckCounter += 1;
 			}
 		}
 		return nextDir;
@@ -267,9 +257,9 @@ public class Stateful extends Drone {
 	 * still within the playing area after taking that direction.
 	 * 
 	 * The updateState method is then called with one of the 2 ArrayLists. If the
-	 * nextPossibleMoves ArrayList is not empty the updateStatus method is
-	 * called with it as its input, otherwise the updateStatus method is
-	 * called with the randomValidMoves ArrayList as its input.
+	 * nextPossibleMoves ArrayList is not empty the updateStatus method is called
+	 * with it as its input, otherwise the updateStatus method is called with the
+	 * randomValidMoves ArrayList as its input.
 	 */
 	@Override
 	public Direction makeMove() {
