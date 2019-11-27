@@ -94,8 +94,8 @@ public final class AppUtil {
 	 *         making a move, the direction it took, and the total value of coins
 	 *         and power it holds after making a move.
 	 */
-	public static String formatTextOutput(Position firstPos, Position secondPos, Direction direction, float coins,
-			float power) {
+	public static String formatTextOutput(Position firstPos, Position secondPos, Direction direction, double coins,
+			double power) {
 		logger.finer(String.format(
 				"Parsing text file output for drone at position %.3f %.3f taking direction %s to position %.3f %.3f",
 				firstPos.latitude, firstPos.longitude, direction, secondPos.latitude, secondPos.longitude));

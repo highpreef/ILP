@@ -11,8 +11,8 @@ public class POI {
 	public double latitude;
 	public double longitude;
 	public String id;
-	public float coins;
-	public float power;
+	public double coins;
+	public double power;
 	public String symbol;
 	public String color;
 
@@ -29,7 +29,7 @@ public class POI {
 	 * @param symbol    This is the symbol of the feature instance.
 	 * @param color     This is the colour of the feature instance.
 	 */
-	public POI(String id, double latitude, double longitude, float coins, float power, String symbol, String color) {
+	public POI(String id, double latitude, double longitude, double coins, double power, String symbol, String color) {
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.id = id;

@@ -15,9 +15,9 @@ import java.util.logging.Logger;
  */
 public abstract class Drone {
 	protected Position currentPosition;
-	protected float coins;
-	protected float power;
-	protected Random randNumGen;
+	protected double coins;
+	protected double power;
+	protected final Random randNumGen;
 	protected int move;
 	protected ArrayList<POI> inRange = new ArrayList<>();
 	protected static Logger logger;

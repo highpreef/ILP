@@ -29,8 +29,8 @@ import java.util.logging.Logger;
 public class App {
 	public static ArrayList<POI> POIs = new ArrayList<>();
 	private static Logger logger;
-	private static float totalCoins = 0;
-	private static float coinsCollected = 0;
+	private static double totalCoins = 0;
+	private static double coinsCollected = 0;
 
 	/**
 	 * This method parses the features, representing geographical locations, of the
@@ -54,8 +54,8 @@ public class App {
 			String id = feature.getProperty("id").getAsString();
 			double latitude = point.latitude();
 			double longitude = point.longitude();
-			float coins = feature.getProperty("coins").getAsFloat();
-			float power = feature.getProperty("power").getAsFloat();
+			double coins = feature.getProperty("coins").getAsDouble();
+			double power = feature.getProperty("power").getAsDouble();
 			String symbol = feature.getProperty("marker-symbol").getAsString();
 			String color = feature.getProperty("marker-color").getAsString();
 			POIs.add(new POI(id, latitude, longitude, coins, power, symbol, color));
@@ -248,12 +248,13 @@ public class App {
 	 * and longitude for the starting position of the drone, the random seed and the
 	 * drone type.
 	 * 
-	 * The method will start by parsing all input arguments, after which it will get
-	 * the target map information. The specified drone type is then initialised as a
-	 * drone object and its movement sequence on the target map is then computed.
-	 * The output is written to two files: a text file describing the move sequence
-	 * of the drone and a geojson file storing the geographical locations of the
-	 * target map and the path the drone took during its move sequence.
+	 * The method will start by parsing all input arguments, catching any invalid
+	 * argument exceptions, after which it will get the target map information. The
+	 * specified drone type is then initialised as a drone object and its movement
+	 * sequence on the target map is then computed. The output is written to two
+	 * files: a text file describing the move sequence of the drone and a geojson
+	 * file storing the geographical locations of the target map and the path the
+	 * drone took during its move sequence.
 	 * 
 	 * A log of the main routine will be also be written to the console, including a
 	 * report on the total coins collected.
@@ -266,6 +267,19 @@ public class App {
 		String day = args[0];
 		String month = args[1];
 		String year = args[2];
+		double latitude;
+		double longitude;
+		int seed;
+
+		try {
+			latitude = Double.parseDouble(args[3]);
+			longitude = Double.parseDouble(args[4]);
+			seed = Integer.parseInt(args[5]);
+		} catch (NumberFormatException e) {
+			logger.severe("Invalid input arguments!");
+			throw new IllegalArgumentException("Invalid arguments!");
+		}
+
 		String mapString = String.format("http://homepages.inf.ed.ac.uk/stg/powergrab/%s/%s/%s/powergrabmap.geojson",
 				year, month, day);
 
@@ -273,9 +287,6 @@ public class App {
 		parseFeatures(mapSource);
 		logger.fine("Target map parsed successfully");
 
-		double latitude = Double.parseDouble(args[3]);
-		double longitude = Double.parseDouble(args[4]);
-		int seed = Integer.parseInt(args[5]);
 		String droneType = args[6];
 
 		Random generator = new Random(seed);
