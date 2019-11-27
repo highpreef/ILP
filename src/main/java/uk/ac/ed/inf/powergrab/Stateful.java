@@ -177,7 +177,9 @@ public class Stateful extends Drone {
 			target = unvisitedPOIs.get(randNumGen.nextInt(unvisitedPOIs.size()));
 			unvisitedPOIs.add(temp);
 			stuckCounter = 0;
-			logger.finer(String.format("Drone wasn't able to charge from target %s in 20 moves, switching to new target %s", temp.id, target.id));
+			logger.finer(
+					String.format("Drone wasn't able to charge from target %s in 20 moves, switching to new target %s",
+							temp.id, target.id));
 		}
 		prevPos = currentPosition;
 
@@ -231,11 +233,13 @@ public class Stateful extends Drone {
 	 * This method implements the abstract method declared in the superclass. It
 	 * computes the direction the drone takes during its next move. If the drone
 	 * currently doesn't have a target it returns the value from the getRandomMove
-	 * method, otherwise 2 ArrayLists are initialised: nextPossibleMoves,
+	 * method, otherwise 3 ArrayLists are initialised: nextPossibleMoves,
 	 * representing a set of directions that minimise the distance from the drone to
 	 * the target while ensuring that the drone doesn't charge from a danger station
-	 * after its move, and randomValidMoves, representing a set of directions that
-	 * are valid for the drone to take.
+	 * after its move, randomValidMoves, representing a set of directions that are
+	 * valid for the drone to take, and safeMoves, representing a set of directions
+	 * where the drone doesn't charge from a danger station with no regard for
+	 * minimising the distance to target.
 	 * 
 	 * The 16 cardinals directions are then iterated in a for loop. For each
 	 * direction the next position the drone would be in is computed and then all
@@ -244,23 +248,26 @@ public class Stateful extends Drone {
 	 * lighthouse or a danger and is within 0.00025 degrees of the next position,
 	 * asserting a respective boolean in that case. For each direction the distance
 	 * to the closest lighthouse and closest danger is also computed along with ID
-	 * of the closest lighthouse. For each direction the nextPossibleMoves ArrayList
-	 * is updated if a set of conditions is passed: There is no danger stations in
-	 * range or there are danger(s) and lighthouse(s) in range but the closest one
-	 * to the drone is a lighthouse, and if the target is in range the closest
-	 * lighthouse is the target, and if the drone hasn't just charged from its
-	 * target it doesn't backtrack to the position in its previous move. If these
-	 * conditions are passed then that direction is added to the nextPossibleMoves
-	 * ArrayList if the distance to the target is equal to the current shortest
-	 * distance, otherwise if the distance to the target is smaller the
-	 * nextPossibleMoves ArrayList is cleared first before adding to it. The
-	 * direction is also added to the randomValidMoves ArrayList if the drone is
-	 * still within the playing area after taking that direction.
+	 * of the closest lighthouse. For each direction the nextPossibleMoves and
+	 * safeMoves ArrayList is updated if a set of conditions is passed: There is no
+	 * danger stations in range or there are danger(s) and lighthouse(s) in range
+	 * but the closest one to the drone is a lighthouse, and if the target is in
+	 * range the closest lighthouse is the target, and if the drone hasn't just
+	 * charged from its target it doesn't backtrack to the position in its previous
+	 * move. If these conditions are passed then that direction is added to the
+	 * nextPossibleMoves ArrayList if the distance to the target is equal to the
+	 * current shortest distance, otherwise if the distance to the target is smaller
+	 * the nextPossibleMoves ArrayList is cleared first before adding to it.
+	 * Otherwise if there is no danger that direction is also added to the safeMoves
+	 * ArrayList. The direction is also added to the randomValidMoves ArrayList if
+	 * the drone is still within the playing area after taking that direction.
 	 * 
-	 * The updateState method is then called with one of the 2 ArrayLists. If the
+	 * The updateState method is then called with one of the 3 ArrayLists. If the
 	 * nextPossibleMoves ArrayList is not empty the updateStatus method is called
-	 * with it as its input, otherwise the updateStatus method is called with the
-	 * randomValidMoves ArrayList as its input.
+	 * with it as its input, if it is empty but the safeMoves ArrayList isn't, then
+	 * the updateState method is called with it as its input, otherwise the
+	 * updateStatus method is called with the randomValidMoves ArrayList as its
+	 * input.
 	 */
 	@Override
 	public Direction makeMove() {
@@ -273,6 +280,7 @@ public class Stateful extends Drone {
 		double minSafeDistToTarget = Integer.MAX_VALUE;
 		ArrayList<Direction> nextPossibleMoves = new ArrayList<>();
 		ArrayList<Direction> randomValidMoves = new ArrayList<>();
+		ArrayList<Direction> safeMoves = new ArrayList<>();
 
 		for (Direction d : Direction.values()) {
 			Position nextPos = currentPosition.nextPosition(d);
@@ -310,6 +318,7 @@ public class Stateful extends Drone {
 						&& !(!hasJustCharged && nextPos.latitude == prevPos.latitude
 								&& nextPos.longitude == prevPos.longitude)) {
 					logger.finest(String.format("Detected 'safe' direction %s during move %d", d, move));
+					safeMoves.add(d);
 					if (nextDistToTarget < minSafeDistToTarget) {
 						minSafeDistToTarget = nextDistToTarget;
 						nextPossibleMoves.clear();
@@ -317,16 +326,20 @@ public class Stateful extends Drone {
 					} else if (nextDistToTarget == minSafeDistToTarget) {
 						nextPossibleMoves.add(d);
 					}
+				} else if ((!danger || (danger && lighthouse && (closestLighthouse < closestDanger)))) {
+					safeMoves.add(d);
 				}
 				randomValidMoves.add(d);
 			}
 		}
-
-		if (nextPossibleMoves.isEmpty()) {
+		if (!nextPossibleMoves.isEmpty()) {
+			return updateState(nextPossibleMoves);
+		} else if (nextPossibleMoves.isEmpty() && !safeMoves.isEmpty()) {
+			logger.finer(String.format("No safe directions minimizing distance to target were found during move %d", move));
+			return updateState(safeMoves);
+		} else {
 			logger.finer(String.format("No safe directions detected during move %d", move));
 			return updateState(randomValidMoves);
-		} else {
-			return updateState(nextPossibleMoves);
 		}
 	}
 }

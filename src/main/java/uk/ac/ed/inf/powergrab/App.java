@@ -223,8 +223,8 @@ public class App {
 	}
 
 	/**
-	 * This method is responsible for initialising an instance of the Logger class,
-	 * which will be used throughout the application for debugging and information
+	 * This method is responsible for creating a Logger with the Logger class, which
+	 * will be used throughout the application for debugging and information
 	 * reports. The level reported by the logger can be modified here to specify the
 	 * granularity of information reported to aid debugging. This method will be
 	 * called at the start of the main method.

@@ -14,12 +14,13 @@ import java.util.logging.Logger;
  */
 public final class FileOutput {
 	private static Logger logger;
-	
+
 	/**
 	 * Make Constructor private to prevent the creation of any instances of this
 	 * class.
 	 */
-	private FileOutput() {};
+	private FileOutput() {
+	};
 
 	/**
 	 * This method is responsible for initialising a subclass logger of the logger

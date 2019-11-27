@@ -81,7 +81,7 @@ public abstract class Drone {
 	 * @return One of the 16 cardinal directions the drone took during the move
 	 *         computation.
 	 */
-	abstract Direction makeMove();
+	public abstract Direction makeMove();
 
 	/**
 	 * This method updates the value of coins and power the drone has if there is a
