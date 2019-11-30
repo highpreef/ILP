@@ -4,26 +4,31 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * This class extends the abstract Drone class. It represents the Stateless
- * drone type. It overrides the getInRange method, implements the makeMove
- * method and defines any necessary support methods.
+ * This class extends the abstract Drone class. It represents the stateless
+ * drone and consists of non-static methods that implement its behaviour. It
+ * also defines the abstract method makeMove() in the superclass.
  * 
  * @author David Jorge (s1712653)
  *
  */
 public class Stateless extends Drone {
+	/**
+	 * It keeps one private attribute ArrayList, inMoveRange, of type POI
+	 * representing all features that could be in charging range after a single
+	 * move.
+	 */
 	private ArrayList<POI> inMoveRange = new ArrayList<>();
 
 	/**
 	 * Constructor of the Stateless drone class. It is executed when a new instance
 	 * of the Stateless class is initialised, calling the superclass constructor and
 	 * the overridden getInRange method. Its inputs are a Position object,
-	 * representing the initial latitude and longitude of the drone, and a random
-	 * number generator object.
+	 * representing the initial latitude and longitude of the drone, and a
+	 * pseudo-random number generator object.
 	 * 
 	 * @param initialPosition This is the Position object representing the initial
 	 *                        latitude and longitude of the drone.
-	 * @param randNumGen      This is the random number generator object.
+	 * @param randNumGen      This is the pseudo-random number generator object.
 	 */
 	public Stateless(Position initialPosition, Random randNumGen) {
 		super(initialPosition, randNumGen);
@@ -31,16 +36,13 @@ public class Stateless extends Drone {
 	}
 
 	/**
-	 * This method overrides the method defined in the superclass. Apart from
-	 * getting all features that are within 0.00025 degrees of the drone, it also
-	 * gets all features that could be in range after the drone has made a move.
-	 * 
-	 * It cycles through all features in the POIs ArrayList and adds all features
-	 * that are 0.00025 degrees away from the current position of the drone to the
-	 * inRange ArrayList while adding all features that are further than 0.00025
-	 * degrees but less than 0.00055 degrees (move distance plus charging distance)
-	 * away from the current position of the drone. The inRange and the inMoveRange
-	 * ArrayLists are cleared every time this method is called.
+	 * This method overrides the one defined in the superclass. Apart from storing
+	 * all features that are within 0.00025 degrees of the drone’s current position,
+	 * it also stores all features that are further than 0.00025 degrees away but
+	 * less than 0.00055 degrees (move distance plus charging distance) in the
+	 * inMoveRange ArrayList kept as an attribute by this class. This represents the
+	 * features that could be in charging range after the drone has made a single
+	 * move.
 	 */
 	@Override
 	protected void getInRange() {
@@ -61,19 +63,20 @@ public class Stateless extends Drone {
 	}
 
 	/**
-	 * This method is responsible for updating all aspects of the drone after it has
-	 * made a move. It takes an ArrayList moveList, representing the possible
-	 * directions the drone can take dictated by the makeMove method, as an input.
-	 * It outputs a direction, which represents the direction the drone has been
-	 * made to take. This method is called by the makeMove method.
+	 * This private method is responsible for updating all necessary attributes of
+	 * the drone after it has computed which direction(s) to go in. It takes an
+	 * ArrayList of type Direction, representing the set of possible directions the
+	 * drone can take, as dictated by the makeMove() method, as an input. It outputs
+	 * a Direction object representing the final direction the drone has chosen to
+	 * take.
 	 * 
-	 * If the size of the input moveList ArrayList is larger than 1 the pseudo
-	 * random number generator is used to randomly choose which direction the drone
-	 * takes. The position of the drone is then updated with the nextPosition method
-	 * of the Position class, the power value is deducted for the move, and the
-	 * getInRange and updateStatus methods are called to update the stations now
-	 * visible by the drone and charge from the closest station in range if one
-	 * exists.
+	 * It chooses a Direction at random, if necessary, from the input ArrayList
+	 * using the pseudo-random number generator attribute. The current position of
+	 * the drone is then updated with the nextPosition() method of the Position
+	 * class, the power attribute is deducted for the move, and the getInRange() and
+	 * updateStatus() methods are called to get the features now visible by the
+	 * drone and to charge from the closest feature in range if applicable.
+	 * 
 	 * 
 	 * @param moveList This is the ArrayList of directions representing the possible
 	 *                 directions the drone can take dictated by the makeMove
@@ -91,33 +94,26 @@ public class Stateless extends Drone {
 	}
 
 	/**
-	 * This method implements the abstract method declared in the superclass. It
-	 * computes the direction the drone takes during its next move. First 3
-	 * ArrayLists are initialised: randomValidMoves, representing a set of
-	 * directions that are valid for the drone to take, safeMoves, representing a
-	 * set of directions where the drone won't charge to a danger station after its
-	 * move, and lighthousesInMoveRange, representing a set of directions where the
-	 * drone will charge to a lighthouse after its move.
+	 * This public method implements the abstract method declared in the superclass
+	 * for the stateless drone behaviour. It computes sets of direction(s) that are
+	 * possible for the drone to take at its current position, updates the
+	 * attributes describing its state at the end of the move and returns a
+	 * Direction object representing the direction the drone took.
 	 * 
-	 * The 16 cardinals directions are then iterated in a for loop. For each
-	 * direction the next position the drone would be in is computed and then all
-	 * features in the inMoveRange ArrayList are iterated if the next position is
-	 * within the playing area. For each feature it is checked whether that feature
-	 * is a lighthouse or a danger and is within 0.00025 degrees of the next
-	 * position, asserting a respective boolean in that case. For each direction the
-	 * distance to the closest lighthouse and closest danger is also computed,
-	 * followed by adding that direction to the lighthousesInMoveRange ArrayList if
-	 * the drone charges from a lighthouse after taking that direction, to the
-	 * safeMoves ArrayList if the drone doesn't charge from a danger after taking
-	 * that direction, and the randomValidMoves ArrayList if the drone is still
-	 * within the playing area after taking that direction.
+	 * From the 16 possible direction it makes sets of them for each of the
+	 * following conditions which have priorities as follows, ordered from most
+	 * important to least important:
 	 * 
-	 * The updateState method is then called with one of the 3 ArrayLists. If the
-	 * lighthousesInMoveRange ArrayList is not empty the updateStatus method is
-	 * called with it as its input, otherwise if it's empty and the safeMoves
-	 * ArrayList is not empty then the updateStatus method is called with it as its
-	 * input, otherwise if both ArrayLists are empty then the updateStatus method is
-	 * called with the randomValidMoves ArrayList as its input.
+	 * 1. The drone charges to a lighthouse by taking that direction. 2. The drone
+	 * is not in charging range of any feature or in charging range of a feature
+	 * with no coin and power values by taking that direction. 3. The drone moves to
+	 * a valid position.
+	 * 
+	 * The method then calls the updateState() method to update the attributes
+	 * describing its current state with the most favourable non-empty set of
+	 * direction(s) it computed, returning the Direction object representing the
+	 * direction the drone takes in this move.
+	 * 
 	 */
 	@Override
 	public Direction makeMove() {

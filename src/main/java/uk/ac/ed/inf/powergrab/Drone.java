@@ -5,15 +5,25 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * This abstract class represents an instance of a Drone. It is responsible for
- * holding method definitions shared by the two drone types as well as defining
- * the abstract method makeMove, which is implemented in both subclasses and
- * will be called by the App class to compute the next move of the drone.
+ * This abstract class implements the abstract representation of a drone. It’s
+ * the superclass for the Stateless and Stateful classes, consisting of
+ * non-static methods which are shared by the two subclasses and the public
+ * abstract method makeMove() that is called by the App class to compute the
+ * next drone move.
  * 
  * @author David Jorge (s1712653)
  *
  */
 public abstract class Drone {
+	/**
+	 * This class has 7 protected attributes: a Position object, currentPosition,
+	 * representing the drone’s current position, 2 double variables, coins and
+	 * power, representing the drone’s current coin and power values respectively, a
+	 * final Random object, randNumGen, representing the pseudo-random number
+	 * generator used by the drone, an ArrayList of type POI, inRange, representing
+	 * the features in charging range of the drone’s current position, and a Logger
+	 * object, logger, used by the Drone class and its subclasses.
+	 */
 	protected Position currentPosition;
 	protected double coins;
 	protected double power;
@@ -27,11 +37,11 @@ public abstract class Drone {
 	 * Constructor, initialising all variables shared by both subclasses and setting
 	 * up a subclass logger of the logger initialised in the App class. Its inputs
 	 * are a Position object, representing the initial latitude and longitude of the
-	 * drone, and a random number generator object.
+	 * drone, and a pseudo-random number generator object.
 	 * 
 	 * @param initialPosition This is the Position object representing the initial
 	 *                        latitude and longitude of the drone.
-	 * @param randNumGen      This is the random number generator object.
+	 * @param randNumGen      This is the pseudo-random number generator object.
 	 */
 	protected Drone(Position initialPosition, Random randNumGen) {
 		this.currentPosition = initialPosition;
@@ -74,9 +84,11 @@ public abstract class Drone {
 	}
 
 	/**
-	 * Abstract declaration of the makeMove method. This method will be defined in
-	 * the subclasses of the Drone class. It computes a move taken by the drone and
-	 * outputs the direction the drone took.
+	 * The abstract declaration of the makeMove() method is done in this class. This
+	 * method will be called by the App class every time the drone is required to
+	 * compute its next move. The concrete definition of the method is implemented
+	 * by the subclasses. It returns a Direction object representing one of the 16
+	 * cardinal directions the drone chose to take for the move.
 	 * 
 	 * @return One of the 16 cardinal directions the drone took during the move
 	 *         computation.
@@ -84,26 +96,22 @@ public abstract class Drone {
 	public abstract Direction makeMove();
 
 	/**
-	 * This method updates the value of coins and power the drone has if there is a
-	 * station in range. It only considers the closest station to the current
-	 * position of the drone and either adds or subtracts to the value of the
-	 * drone's coins and power depending on the type of station.
+	 * This method updates the drone’s current coin and power values if there is a
+	 * station in charging range. It only carries out the transaction with the
+	 * closest station in charging range to the drone’s current position.
 	 * 
-	 * The closest station, represented by a POI object, to the current drone
-	 * position is first calculated. If there are no stations in range this method
-	 * does nothing, otherwise it either adds or subtracts the coins and power held
-	 * by the station to the drones's depending on whether it's a lighthouse or
-	 * danger respectively. The transaction of coins is reflected on the POI object.
-	 * If the feature is a lighthouse, the value of its coins and power is set to 0.
-	 * If the feature is a danger then first the coin and power difference between
-	 * the feature and the drone is calculated. Then the feature's value of coins or
-	 * power is set to 0 is the difference is positive (drone has more coins or
-	 * power than the feature), or it is set to the value minus the difference if
-	 * its negative (drone has less coins or power than the feature).
+	 * If no feature is found to be in charging range of the drone’s current
+	 * position this method does nothing, otherwise if the closest feature is a
+	 * lighthouse, the method adds the coin and power values to the drone’s own,
+	 * setting the feature’s coin and power values to 0. If the closest feature is a
+	 * danger it subtracts the feature’s coin and power values from the drone’s own.
+	 * The drone’s value of coins and power can’t be negative, so any excess is kept
+	 * by the feature, otherwise the feature’s coin and power values are set to 0.
+	 * 
 	 */
 	protected void updateStatus() {
 		POI closestPOI = null;
-		double minDist = 0.00025;
+		double minDist = Integer.MAX_VALUE;
 		for (POI feature : inRange) {
 			double dist = euclideanDist(feature.latitude, feature.longitude, currentPosition.latitude,
 					currentPosition.longitude);
@@ -117,8 +125,8 @@ public abstract class Drone {
 			if (closestPOI.symbol.equals("lighthouse")) {
 				this.coins += closestPOI.coins;
 				this.power += closestPOI.power;
-				logger.fine(String.format("Gained %.2f coins from id %s during move %d", closestPOI.coins, closestPOI.id,
-						move));
+				logger.fine(String.format("Gained %.2f coins from id %s during move %d", closestPOI.coins,
+						closestPOI.id, move));
 				closestPOI.coins = 0;
 				closestPOI.power = 0;
 			} else if (closestPOI.symbol.equals("danger")) {

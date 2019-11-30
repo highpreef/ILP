@@ -1,8 +1,8 @@
 package uk.ac.ed.inf.powergrab;
 
 /**
- * This class is used for enumerating the 16 cardinal directions along with
- * their angles in degrees.
+ * This class is used to define a collection of constants representing the 16
+ * cardinal directions along with the angle their angle in degrees.
  * 
  * @author David Jorge (s1712653)
  *
@@ -14,8 +14,8 @@ public enum Direction {
 	public double angle;
 
 	/**
-	 * Constructor of the Direction class. It allows for the angle of each direction
-	 * to be accessible.
+	 * Constructor for the direction class. Allows for each defined constant to have
+	 * an angle associated with it.
 	 * 
 	 * @param angle This is the angle for each one of the 16 cardinal directions.
 	 */

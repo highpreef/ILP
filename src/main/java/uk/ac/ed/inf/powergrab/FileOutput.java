@@ -6,13 +6,20 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
- * This class specialises in handling all output file writing requests from the
- * App class.
+ * This class is responsible for handling output file writing requests. It
+ * consists exclusively of static methods which either setup a logger for the
+ * class or write contents to an output file. The class is made final to prevent
+ * it from being extended. Where appropriate, the methods of this class can
+ * throw an IOException.
  * 
  * @author DAVID
  *
  */
 public final class FileOutput {
+	/**
+	 * A private attribute, logger, of type Logger is kept by this class in order to
+	 * make logging statements throughout its methods where applicable.
+	 */
 	private static Logger logger;
 
 	/**

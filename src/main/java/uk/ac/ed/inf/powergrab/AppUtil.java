@@ -9,12 +9,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This class specialises in defining support methods for the App class.
+ * This class defines support methods for the App class. It consists exclusively
+ * of static methods, which will be called from the App class, that operate
+ * primarily on Strings, formatting them into a desired result. The class is
+ * made final to prevent it from being extended.
  * 
  * @author David Jorge (s1712653)
  *
  */
 public final class AppUtil {
+	/**
+	 * A private attribute, logger, of type Logger is kept by this class in order to
+	 * make logging statements throughout its methods where applicable.
+	 */
 	private static Logger logger;
 
 	/**
@@ -52,10 +59,8 @@ public final class AppUtil {
 
 	/**
 	 * This is a support method for the computeMoveSequence method in the App class.
-	 * It takes an input ArrayList of type String representing the output created
-	 * for each move in the move sequence. It outputs a String that will be written
-	 * to the output text file following its design specifications where each output
-	 * String for every move has to be in a new line.
+	 * It takes an ArrayList of type String as its input, and it outputs a String
+	 * where every entity of the input ArrayList is separated by a new line.
 	 * 
 	 * @param moveList This is the ArrayList of type String containing the output
 	 *                 String created after every move in the move sequence.

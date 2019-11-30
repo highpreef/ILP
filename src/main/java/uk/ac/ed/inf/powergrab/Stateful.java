@@ -4,14 +4,24 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * This class extends the abstract Drone class. It represents the Stateful drone
- * type. It implements the makeMove method and defines any necessary support
- * methods.
+ * This class extends the abstract Drone class. It represents the stateful drone
+ * and consists of non-static methods that implement its behaviour. It also
+ * defines the abstract method makeMove() in the superclass.
  * 
  * @author David Jorge (s1712653)
  *
  */
 public class Stateful extends Drone {
+	/**
+	 * It keeps 5 private attributes: a POI object, target, representing the
+	 * lighthouse the drone is currently aiming to charge from, a Position object,
+	 * prevPos, representing the drone’s previous position, a Boolean,
+	 * hasJustCharged, representing whether or not the drone has charged from its
+	 * current target in its previous move, an ArrayList, unvisitedPOIs, of type POI
+	 * representing the lighthouses the drone hasn’t charged from yet, and an int,
+	 * stuckCounter, representing the amount of moves the drone has taken to reach
+	 * the current target.
+	 */
 	private POI target;
 	private Position prevPos = new Position(0, 0);
 	private boolean hasJustCharged = false;
@@ -23,11 +33,11 @@ public class Stateful extends Drone {
 	 * of the Stateful class is initialised, calling the superclass constructor and
 	 * the loadTargets and getNextTarget methods, which initialise the starting
 	 * target. Its inputs are a Position object, representing the initial latitude
-	 * and longitude of the drone, and a random number generator object.
+	 * and longitude of the drone, and a pseudo-random number generator object.
 	 * 
 	 * @param initialPosition This is the Position object representing the initial
 	 *                        latitude and longitude of the drone.
-	 * @param randNumGen      This is the random number generator object.
+	 * @param randNumGen      This is the pseudo-random number generator object.
 	 */
 	public Stateful(Position initialPosition, Random randNumGen) {
 		super(initialPosition, randNumGen);
@@ -51,11 +61,13 @@ public class Stateful extends Drone {
 	}
 
 	/**
-	 * This method sets the current target of the drone to the closest target. It
-	 * first iterates through the features in the unvisitedPOIs ArrayList,
-	 * representing all targets yet to be visited, and sets the current target to
-	 * the closest target to the current position of the drone if there are still
-	 * targets left, otherwise the current target is set to null.
+	 * This private method sets the class attribute representing the drone’s current
+	 * target with the feature from the unvisitedPOIs ArrayList, representing the
+	 * lighthouses the drone hasn’t charged from yet, that is closest to the drone’s
+	 * current position. If the unvisitedPOIs class attribute is empty, this method
+	 * sets the value of the attribute representing the drone’s current target to
+	 * null. If the class attribute is set to a not null value, its reference is
+	 * also removed from the unvisitedPOIs class attribute.
 	 */
 	private void getNextTarget() {
 		POI nearestPOI = null;
@@ -81,28 +93,24 @@ public class Stateful extends Drone {
 	}
 
 	/**
-	 * This method computes the next direction the drone should should take focusing
-	 * only on avoiding danger stations. Two ArrayLists are initialised: safeMoves,
-	 * representing a set of directions where the drone won't charge to a danger
-	 * station after its move, and validMoves, representing a set of directions that
-	 * are valid for the drone to take.
+	 * This private method returns a Direction object representing the most
+	 * favourable ‘random’ direction the drone is made to take. It computes sets of
+	 * direction(s) that are possible for the drone to take at its current position,
+	 * updates the attributes describing its state at the end of the move and
+	 * returns a Direction object representing the direction the drone took.
 	 * 
-	 * The 16 cardinal directions are then iterated in a for loop. For each
-	 * direction the next position the drone would be in is computed and then all
-	 * features in the POIs ArrayList are iterated if the next position is within
-	 * the playing area. For each feature it is checked whether that feature is
-	 * danger and is within 0.00025 degrees of the next position, asserting a
-	 * boolean in that case. For each direction its value is added to the safeMoves
-	 * ArrayList if the drone doesn't charge from a danger after taking that
-	 * direction, and the validMove ArrayList if the drone is still within the
-	 * playing area after taking that direction.
+	 * From the 16 possible direction it makes sets of them for each of the
+	 * following conditions which have priorities as follows, ordered from most
+	 * important to least important:
 	 * 
-	 * The updateState method is then called with one of the 2 ArrayLists. If the
-	 * safeMoves ArrayList is not empty the updateStatus method is called with it as
-	 * its input, otherwise if it's empty then the updateStatus method is called
-	 * with the validMoves ArrayList as its input.
+	 * 1. The drone doesn’t charge from a danger feature. 2. The drone moves to a
+	 * valid position.
 	 * 
-	 * @return
+	 * It calls the updateState() method with the set of directions computed to
+	 * return a Direction object representing the direction the drone takes.
+	 * 
+	 * @return A Direction object representing a 'random' move by the drone that
+	 *         aims to not charge from any feature.
 	 */
 	private Direction getRandomMove() {
 		ArrayList<Direction> safeMoves = new ArrayList<>();
@@ -111,17 +119,30 @@ public class Stateful extends Drone {
 		for (Direction d : Direction.values()) {
 			Position nextPos = currentPosition.nextPosition(d);
 			boolean danger = false;
+			boolean lighthouse = false;
+
+			double closestLighthouse = Integer.MAX_VALUE;
+			double closestDanger = Integer.MAX_VALUE;
 
 			if (nextPos.inPlayArea()) {
 				for (POI feature : App.POIs) {
 					double distanceToFeature = euclideanDist(feature.latitude, feature.longitude, nextPos.latitude,
 							nextPos.longitude);
-					if (distanceToFeature <= 0.00025 && feature.symbol.equals("danger")
+					if (distanceToFeature <= 0.00025 && feature.symbol.equals("lighthouse")
+							&& (feature.coins > 0 || feature.power > 0)) {
+						lighthouse = true;
+						if (distanceToFeature <= closestLighthouse) {
+							closestLighthouse = distanceToFeature;
+						}
+					} else if (distanceToFeature <= 0.00025 && feature.symbol.equals("danger")
 							&& (feature.coins < 0 || feature.power < 0)) {
 						danger = true;
+						if (distanceToFeature <= closestDanger) {
+							closestDanger = distanceToFeature;
+						}
 					}
 				}
-				if (!danger)
+				if ((!danger || (danger && lighthouse && (closestLighthouse < closestDanger))))
 					safeMoves.add(d);
 				validMoves.add(d);
 			}
@@ -135,33 +156,24 @@ public class Stateful extends Drone {
 	}
 
 	/**
-	 * This method is responsible for updating all aspects of the drone after it has
-	 * made a move. It takes an ArrayList moveList, representing the possible
-	 * directions the drone can take dictated by the makeMove or getRandomMove
-	 * methods, as an input. It outputs a direction, which represents the direction
-	 * the drone has been made to take. It is also responsible for checking whether
-	 * the drone has gone back and forth from the same positions multiple times,
-	 * changing the current target in that case. This method is called by the
-	 * makeMove method.
+	 * This private method is responsible for updating all necessary attributes of
+	 * the drone after it has computed the set of possible direction(s) to go to. It
+	 * takes an ArrayList of type Direction, representing the possible directions
+	 * the drone can take, as dictated by the makeMove() method, as an input. It
+	 * outputs a Direction object representing the final direction the drone has
+	 * chosen to take.
 	 * 
-	 * If the size of the input moveList ArrayList is larger than 1 the pseudo
-	 * random number generator is used to randomly choose which direction the drone
-	 * takes. If the drone hasn't reached its target in 20 moves, a new randomly
-	 * chosen target will be loaded. The chosen direction and position are then
-	 * stored, followed by updating the next position of the drone with the
-	 * nextPosition method of the Position class, the power value is deducted for
-	 * the move, and the getInRange and updateStatus methods are called to update
-	 * the stations now visible by the drone and charge from the closest station in
-	 * range if one exists.
-	 * 
-	 * If the drone currently has a target then this method check if the target has
-	 * been charged from during the move, if so it calls the getNextTarget method
-	 * and asserts the hasJustCharged boolean to signal that the drone has just
-	 * charged from its target, otherwise it checks if any other lighthouses that
-	 * are not the target have been charged from during the move, if so it removes
-	 * that lighthouse from the unvisitedPOIs ArrayList and sets the hasJustCharged
-	 * boolean to false signalling that the current target has not yet been charged
-	 * from.
+	 * It chooses a Direction at random, if necessary, from the input ArrayList
+	 * using the pseudo-random number generator attribute. The current position of
+	 * the drone is then updated, the power attribute is deducted for the move, and
+	 * the getInRange() and updateStatus() methods are called to get the features
+	 * now visible by the drone and to charge from the closest feature in range if
+	 * applicable. It will also check if the drone is stuck on its current target if
+	 * applicable. If the drone currently has a target it will check if the target
+	 * has been charged from, calling the getNextTarget() method to get the next
+	 * target if so. Otherwise it checks if other lighthouses, that are not the
+	 * target, have been charged from, removing them from the unvisitedPOIs class
+	 * attribute.
 	 * 
 	 * @param moveList This is the ArrayList of directions representing the possible
 	 *                 directions the drone can take dictated by the makeMove or the
@@ -177,9 +189,8 @@ public class Stateful extends Drone {
 			target = unvisitedPOIs.get(randNumGen.nextInt(unvisitedPOIs.size()));
 			unvisitedPOIs.add(temp);
 			stuckCounter = 0;
-			logger.finer(
-					String.format("Drone wasn't able to charge from target %s in 20 moves, switching to new target %s",
-							temp.id, target.id));
+			logger.finer(String.format("Drone couldn't charge from target %s in 20 moves, switching to new target %s",
+					temp.id, target.id));
 		}
 		prevPos = currentPosition;
 
@@ -230,44 +241,26 @@ public class Stateful extends Drone {
 	}
 
 	/**
-	 * This method implements the abstract method declared in the superclass. It
-	 * computes the direction the drone takes during its next move. If the drone
-	 * currently doesn't have a target it returns the value from the getRandomMove
-	 * method, otherwise 3 ArrayLists are initialised: nextPossibleMoves,
-	 * representing a set of directions that minimise the distance from the drone to
-	 * the target while ensuring that the drone doesn't charge from a danger station
-	 * after its move, randomValidMoves, representing a set of directions that are
-	 * valid for the drone to take, and safeMoves, representing a set of directions
-	 * where the drone doesn't charge from a danger station with no regard for
-	 * minimising the distance to target.
+	 * This public method implements the abstract method declared in the superclass
+	 * for the statateful drone behaviour. It computes sets of direction(s) that are
+	 * possible for the drone to take at its current position, updates the
+	 * attributes describing its state at the end of the move and returns a
+	 * Direction object representing the direction the drone took.
 	 * 
-	 * The 16 cardinals directions are then iterated in a for loop. For each
-	 * direction the next position the drone would be in is computed and then all
-	 * features in the POIs ArrayList are iterated if the next position is within
-	 * the playing area. For each feature it is checked whether that feature is a
-	 * lighthouse or a danger and is within 0.00025 degrees of the next position,
-	 * asserting a respective boolean in that case. For each direction the distance
-	 * to the closest lighthouse and closest danger is also computed along with ID
-	 * of the closest lighthouse. For each direction the nextPossibleMoves and
-	 * safeMoves ArrayList is updated if a set of conditions is passed: There is no
-	 * danger stations in range or there are danger(s) and lighthouse(s) in range
-	 * but the closest one to the drone is a lighthouse, and if the target is in
-	 * range the closest lighthouse is the target, and if the drone hasn't just
-	 * charged from its target it doesn't backtrack to the position in its previous
-	 * move. If these conditions are passed then that direction is added to the
-	 * nextPossibleMoves ArrayList if the distance to the target is equal to the
-	 * current shortest distance, otherwise if the distance to the target is smaller
-	 * the nextPossibleMoves ArrayList is cleared first before adding to it.
-	 * Otherwise if there is no danger that direction is also added to the safeMoves
-	 * ArrayList. The direction is also added to the randomValidMoves ArrayList if
-	 * the drone is still within the playing area after taking that direction.
+	 * From the 16 possible direction it makes sets of them for each of the
+	 * following conditions which have priorities as follows, ordered from most
+	 * important to least important:
 	 * 
-	 * The updateState method is then called with one of the 3 ArrayLists. If the
-	 * nextPossibleMoves ArrayList is not empty the updateStatus method is called
-	 * with it as its input, if it is empty but the safeMoves ArrayList isn't, then
-	 * the updateState method is called with it as its input, otherwise the
-	 * updateStatus method is called with the randomValidMoves ArrayList as its
-	 * input.
+	 * 1. The drone makes progress to charge from the current target by taking that
+	 * direction. 2. The drone is not in charging range of any danger feature or in
+	 * charging range of a feature with no coin and power values by taking that
+	 * direction. 3. The drone moves to a valid position.
+	 * 
+	 * The method then calls the updateState() method to update the attributes
+	 * describing its current state with the most favourable non-empty set of
+	 * direction(s) it computed, returning the Direction object representing the
+	 * direction the drone takes in this move.
+	 * 
 	 */
 	@Override
 	public Direction makeMove() {
@@ -278,7 +271,7 @@ public class Stateful extends Drone {
 		}
 
 		double minSafeDistToTarget = Integer.MAX_VALUE;
-		ArrayList<Direction> nextPossibleMoves = new ArrayList<>();
+		ArrayList<Direction> movesToTarget = new ArrayList<>();
 		ArrayList<Direction> randomValidMoves = new ArrayList<>();
 		ArrayList<Direction> safeMoves = new ArrayList<>();
 
@@ -312,19 +305,17 @@ public class Stateful extends Drone {
 						}
 					}
 				}
-
 				if ((!danger || (danger && lighthouse && (closestLighthouse < closestDanger)))
-						&& (!(nextDistToTarget <= 0.00025) || closestLighthouseId.equals(target.id))
-						&& !(!hasJustCharged && nextPos.latitude == prevPos.latitude
-								&& nextPos.longitude == prevPos.longitude)) {
+						&& (!(nextDistToTarget <= 0.00025) || closestLighthouseId.equals(target.id)) && (hasJustCharged
+								|| !(nextPos.latitude == prevPos.latitude && nextPos.longitude == prevPos.longitude))) {
 					logger.finest(String.format("Detected 'safe' direction %s during move %d", d, move));
 					safeMoves.add(d);
 					if (nextDistToTarget < minSafeDistToTarget) {
 						minSafeDistToTarget = nextDistToTarget;
-						nextPossibleMoves.clear();
-						nextPossibleMoves.add(d);
+						movesToTarget.clear();
+						movesToTarget.add(d);
 					} else if (nextDistToTarget == minSafeDistToTarget) {
-						nextPossibleMoves.add(d);
+						movesToTarget.add(d);
 					}
 				} else if ((!danger || (danger && lighthouse && (closestLighthouse < closestDanger)))) {
 					safeMoves.add(d);
@@ -332,10 +323,11 @@ public class Stateful extends Drone {
 				randomValidMoves.add(d);
 			}
 		}
-		if (!nextPossibleMoves.isEmpty()) {
-			return updateState(nextPossibleMoves);
-		} else if (nextPossibleMoves.isEmpty() && !safeMoves.isEmpty()) {
-			logger.finer(String.format("No safe directions minimizing distance to target were found during move %d", move));
+		if (!movesToTarget.isEmpty()) {
+			return updateState(movesToTarget);
+		} else if (movesToTarget.isEmpty() && !safeMoves.isEmpty()) {
+			logger.finer(
+					String.format("No safe directions minimizing distance to target were found during move %d", move));
 			return updateState(safeMoves);
 		} else {
 			logger.finer(String.format("No safe directions detected during move %d", move));

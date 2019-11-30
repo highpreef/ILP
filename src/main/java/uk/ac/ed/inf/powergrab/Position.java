@@ -1,16 +1,22 @@
 package uk.ac.ed.inf.powergrab;
 
 /**
- * This class is used for representing a position in terms of latitude and
- * longitude. It also offers utility methods.
+ * This class represents an instance of a position in a 2D lat-long space. It
+ * consists of non-static methods that operate on the current position.
  * 
  * @author David Jorge (s1712653)
  *
  */
 public class Position {
+	/**
+	 * It keeps 3 attributes for each an instance: a public double representing the
+	 * latitude of the position, a public double representing the longitude of the
+	 * position, and a private final double representing the distance a drone
+	 * travels during a move.
+	 */
 	public double latitude;
 	public double longitude;
-	public final double r = 0.0003;
+	private final double r = 0.0003;
 
 	/**
 	 * Constructor for the Position class. It stores the latitude and longitude of a
@@ -25,9 +31,10 @@ public class Position {
 	}
 
 	/**
-	 * This method returns the next position after a move of 0.0003 degrees in a
-	 * direction. It takes one of 16 cardinal directions as its input. It outputs
-	 * the next position using trigonometry.
+	 * This public method returns the next position relative to the current position
+	 * after travelling a distance of 0.0003 degrees in one of the 16 cardinal
+	 * directions. It takes a Direction object representing one of the 16 cardinal
+	 * directions and returns the position after the move using trigonometry.
 	 * 
 	 * @param direction This is one of the 16 cardinal direction the move is made
 	 *                  to.
@@ -42,8 +49,9 @@ public class Position {
 	}
 
 	/**
-	 * This method returns a boolean value representing whether the current position
-	 * is within a defined area.
+	 * This public method returns a Boolean value representing whether or not the
+	 * current position is within the well-defined playing are of the powergrab
+	 * application.
 	 * 
 	 * @return true if the Position object is within the play area otherwise it
 	 *         returns false.

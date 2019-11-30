@@ -19,14 +19,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class contains the main routine of the powergrab application. It is
- * responsible for the I/O necessities of the application and for initialising
- * all essential classes to the powergrab application.
+ * This class implements the main routine for the application. It consists
+ * exclusively of static methods that operate primarily on or return objects
+ * representing arguments and outputs of the drone functionality. It’s
+ * responsible for handling the I/O of the application and for controlling the
+ * drone functionality. Where applicable the methods of this class can throw an
+ * IllegalArgumentException, MalformedURLException and IOException, indicating
+ * invalid arguments or outputs.
  * 
  * @author David Jorge (s1712653)
  *
  */
 public class App {
+	/**
+	 * This class has 4 attributes: a public ArrayList, POIs, of type POI which
+	 * store references to all individual features of the target map, a private
+	 * Logger object, logger, to log statements in this class, and 2 private floats,
+	 * totalCoins and coinsCollected, representing the total possible amount of
+	 * coins to be acquired and the total amount acquired by the drone during its
+	 * move sequence respectively.
+	 */
 	public static ArrayList<POI> POIs = new ArrayList<>();
 	private static Logger logger;
 	private static double totalCoins = 0;
@@ -43,11 +55,11 @@ public class App {
 	 * instance of the POI class containing the ID, latitude and longitude, coins,
 	 * power, symbol and colour described by that feature.
 	 * 
-	 * @param mapSource
+	 * @param mapSource This is the String holding the information from the target
+	 *                  map in a geojson format.
 	 */
 	private static void parseFeatures(String mapSource) {
-		FeatureCollection features = FeatureCollection.fromJson(mapSource);
-		List<Feature> featureList = features.features();
+		List<Feature> featureList = FeatureCollection.fromJson(mapSource).features();
 
 		for (Feature feature : featureList) {
 			Point point = (Point) feature.geometry();
@@ -122,16 +134,16 @@ public class App {
 
 	/**
 	 * This method initialises the drone object. Its inputs are a position object
-	 * representing the drone's initial position, a random number generator object,
-	 * and a String representing the drone type. It outputs a drone object
+	 * representing the drone's initial position, a pseudo-random number generator
+	 * object, and a String representing the drone type. It outputs a drone object
 	 * representing one of two possible types of drones: The Stateless drone or the
 	 * Stateful drone. This method handles any invalid argument errors arising from
 	 * a non-existing drone type. This method will be called in the main method.
 	 * 
 	 * @param initialPosition This is the Position object containing the starting
 	 *                        latitude and longitude of the drone.
-	 * @param randNumGen      This is the random number generator object used in
-	 *                        calculating random movements taken by the drone.
+	 * @param randNumGen      This is the pseudo-random number generator object used
+	 *                        in calculating random movements taken by the drone.
 	 * @param droneType       This is a String representing the drone type. Only
 	 *                        accepted drone types are "Stateless" or "Stateful".
 	 * @return A drone object representing the selected drone type.
@@ -186,11 +198,12 @@ public class App {
 	}
 
 	/**
-	 * This method parses the target map information from a URL as a String. It
-	 * takes a URL as its input, which will contain the geojson file of the target
-	 * map. It handles errors from the URL reading and it will check for malformed
-	 * URLs. It will also raise an illegal argument exception if the output geojson
-	 * file is null. This method will be called in the main function.
+	 * This method parses the target map information from a URL. It takes a String,
+	 * representing a URL, as its input which contains the geojson file of the
+	 * target map. It handles errors from the URL connection attempt and it will
+	 * check for malformed URLs. It will also raise an illegal argument exception if
+	 * the output geojson file is null. This method will be called in the main
+	 * function.
 	 * 
 	 * @param url This is the URL containing the geojson file of the target map.
 	 * @return The geojson file for the target map as a string.
@@ -229,7 +242,7 @@ public class App {
 	 * granularity of information reported to aid debugging. This method will be
 	 * called at the start of the main method.
 	 */
-	public static void setupLogger() {
+	private static void setupLogger() {
 		logger = Logger.getLogger("App");
 		logger.setLevel(Level.INFO);
 		Logger rootLogger = Logger.getLogger("");
@@ -308,7 +321,7 @@ public class App {
 		FileOutput.writeToFile(jsonFileName, jsonFile);
 		logger.fine("Write to geojson file successful");
 
-		logger.info(String.format("For target map (%s/%s/%s):\nCollected a total of %.2f out of %.2f coins", day, month,
-				year, coinsCollected, totalCoins));
+		logger.info(String.format("For target map (%s/%s/%s):\n%s drone collected a total of %.2f out of %.2f coins", day, month,
+				year, droneType, coinsCollected, totalCoins));
 	}
 }
