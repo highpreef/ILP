@@ -54,9 +54,8 @@ public abstract class Drone {
 
 	/**
 	 * This method is responsible for initialising a subclass logger of the logger
-	 * class initialised in the App class. This logger object will be used for
-	 * debugging and information message logging in the Drone class and its
-	 * subclasses.
+	 * initialised in the App class. This logger will be used for debugging and
+	 * information message logging in the Drone class and its subclasses.
 	 */
 	private static void setupLogger() {
 		logger = Logger.getLogger("App.Drone");
@@ -132,14 +131,16 @@ public abstract class Drone {
 			} else if (closestPOI.symbol.equals("danger")) {
 				double coinDif = this.coins + closestPOI.coins;
 				double powerDif = this.power + closestPOI.power;
-				logger.fine(String.format("Lost %.2f coins from id %s during move %d", -closestPOI.coins, closestPOI.id,
-						move));
 				if (coinDif < 0) {
 					this.coins = 0;
 					closestPOI.coins -= coinDif;
+					logger.fine(
+							String.format("Lost %.2f coins from id %s during move %d", -coinDif, closestPOI.id, move));
 				} else {
 					this.coins = this.coins + closestPOI.coins;
 					closestPOI.coins = 0;
+					logger.fine(String.format("Lost %.2f coins from id %s during move %d", -closestPOI.coins,
+							closestPOI.id, move));
 				}
 				if (powerDif < 0) {
 					this.power = 0;
@@ -155,14 +156,14 @@ public abstract class Drone {
 
 	/**
 	 * This method returns a boolean value representing whether the drone has a
-	 * power value greater than or equal to 2.5 (power necessary to make a move) or
+	 * power value greater than or equal to 1.25 (power necessary to make a move) or
 	 * not.
 	 * 
-	 * @return true if the drone a power value greater than or equal to 2.5 or false
-	 *         if the drone has a power value less than 2.5.
+	 * @return true if the drone a power value greater than or equal to 1.25 or
+	 *         false if the drone has a power value less than 1.25.
 	 */
 	public boolean hasPower() {
-		return this.power >= 2.5;
+		return this.power >= 1.25;
 	}
 
 	/**

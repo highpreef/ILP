@@ -13,7 +13,7 @@ import java.util.Random;
  */
 public class Stateful extends Drone {
 	/**
-	 * It keeps 5 private attributes: a POI object, target, representing the
+	 * This class has 5 private attributes: a POI object, target, representing the
 	 * lighthouse the drone is currently aiming to charge from, a Position object,
 	 * prevPos, representing the drone’s previous position, a Boolean,
 	 * hasJustCharged, representing whether or not the drone has charged from its
@@ -75,7 +75,6 @@ public class Stateful extends Drone {
 		for (POI feature : unvisitedPOIs) {
 			double distance = euclideanDist(currentPosition.latitude, currentPosition.longitude, feature.latitude,
 					feature.longitude);
-
 			if (distance <= minDist) {
 				minDist = distance;
 				nearestPOI = feature;
@@ -195,7 +194,7 @@ public class Stateful extends Drone {
 		prevPos = currentPosition;
 
 		currentPosition = currentPosition.nextPosition(nextDir);
-		power -= 2.5;
+		power -= 1.25;
 		getInRange();
 		updateStatus();
 

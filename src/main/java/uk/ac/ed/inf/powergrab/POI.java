@@ -8,9 +8,9 @@ package uk.ac.ed.inf.powergrab;
  */
 public class POI {
 	/**
-	 * It keeps 7 public attributes describing feature characteristics. It stores
-	 * the ID, the latitude and longitude, the value of coins and power, the symbol
-	 * and the colour of a feature instance.
+	 * This class has 7 public attributes describing feature characteristics. It
+	 * stores the ID, the latitude and longitude, the value of coins and power, the
+	 * symbol and the colour of a feature instance.
 	 */
 	public double latitude;
 	public double longitude;

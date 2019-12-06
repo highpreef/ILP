@@ -9,10 +9,10 @@ package uk.ac.ed.inf.powergrab;
  */
 public class Position {
 	/**
-	 * It keeps 3 attributes for each an instance: a public double representing the
-	 * latitude of the position, a public double representing the longitude of the
-	 * position, and a private final double representing the distance a drone
-	 * travels during a move.
+	 * This class has 3 attributes for each an instance: a public double
+	 * representing the latitude of the position, a public double representing the
+	 * longitude of the position, and a private final double representing the
+	 * distance a drone travels during a move.
 	 */
 	public double latitude;
 	public double longitude;

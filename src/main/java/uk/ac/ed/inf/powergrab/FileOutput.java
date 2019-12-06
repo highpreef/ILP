@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  * it from being extended. Where appropriate, the methods of this class can
  * throw an IOException.
  * 
- * @author DAVID
+ * @author David Jorge (s1712653)
  *
  */
 public final class FileOutput {
@@ -31,8 +31,8 @@ public final class FileOutput {
 
 	/**
 	 * This method is responsible for initialising a subclass logger of the logger
-	 * class initialised in the App class. This logger object will be used for
-	 * debugging and information message logging in the AppFileOutput class.
+	 * initialised in the App class. This logger object will be used for debugging
+	 * and information message logging in the AppFileOutput class.
 	 */
 	public static void setupLogger() {
 		logger = Logger.getLogger("App.AppFileOutput");

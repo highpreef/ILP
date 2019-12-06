@@ -13,7 +13,7 @@ import java.util.Random;
  */
 public class Stateless extends Drone {
 	/**
-	 * It keeps one private attribute ArrayList, inMoveRange, of type POI
+	 * This class has one private attribute ArrayList, inMoveRange, of type POI
 	 * representing all features that could be in charging range after a single
 	 * move.
 	 */
@@ -87,7 +87,7 @@ public class Stateless extends Drone {
 		Direction nextDir = moveList.get(randNumGen.nextInt(moveList.size()));
 		logger.finer(String.format("Drone went in direction %s during move %d", nextDir, move));
 		currentPosition = currentPosition.nextPosition(nextDir);
-		power -= 2.5;
+		power -= 1.25;
 		getInRange();
 		updateStatus();
 		return nextDir;

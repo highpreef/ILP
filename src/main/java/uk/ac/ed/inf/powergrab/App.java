@@ -34,10 +34,10 @@ public class App {
 	/**
 	 * This class has 4 attributes: a public ArrayList, POIs, of type POI which
 	 * store references to all individual features of the target map, a private
-	 * Logger object, logger, to log statements in this class, and 2 private floats,
-	 * totalCoins and coinsCollected, representing the total possible amount of
-	 * coins to be acquired and the total amount acquired by the drone during its
-	 * move sequence respectively.
+	 * Logger object, logger, to log statements in this class, and 2 private double
+	 * variables, totalCoins and coinsCollected, representing the total possible
+	 * amount of coins to be acquired and the total amount acquired by the drone
+	 * during its move sequence respectively.
 	 */
 	public static ArrayList<POI> POIs = new ArrayList<>();
 	private static Logger logger;
@@ -224,7 +224,7 @@ public class App {
 			logger.severe("Input URL is malformed!");
 			e.printStackTrace();
 		} catch (IOException e) {
-			logger.severe("Failed to connect!");
+			logger.severe("Failed to get map!");
 			e.printStackTrace();
 		}
 		if (mapSource != null)
@@ -236,11 +236,12 @@ public class App {
 	}
 
 	/**
-	 * This method is responsible for creating a Logger with the Logger class, which
-	 * will be used throughout the application for debugging and information
-	 * reports. The level reported by the logger can be modified here to specify the
-	 * granularity of information reported to aid debugging. This method will be
-	 * called at the start of the main method.
+	 * This private method is responsible for creating a new Logger from the Logger
+	 * class using its getLogger() method. A hierarchy of loggers will be created
+	 * throughout the application with the App class logger as the top level. The
+	 * level reported by the logger can be modified here to specify the granularity
+	 * of information reported to aid debugging. This method will be called at the
+	 * start of the main method.
 	 */
 	private static void setupLogger() {
 		logger = Logger.getLogger("App");
@@ -321,7 +322,7 @@ public class App {
 		FileOutput.writeToFile(jsonFileName, jsonFile);
 		logger.fine("Write to geojson file successful");
 
-		logger.info(String.format("For target map (%s/%s/%s):\n%s drone collected a total of %.2f out of %.2f coins", day, month,
-				year, droneType, coinsCollected, totalCoins));
+		logger.info(String.format("For target map (%s/%s/%s):\n%s drone collected a total of %.2f out of %.2f coins",
+				day, month, year, droneType, coinsCollected, totalCoins));
 	}
 }

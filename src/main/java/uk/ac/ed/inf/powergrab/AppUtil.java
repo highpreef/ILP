@@ -33,8 +33,8 @@ public final class AppUtil {
 
 	/**
 	 * This method is responsible for initialising a subclass logger of the logger
-	 * class initialised in the App class. This logger object will be used for
-	 * debugging and information message logging in the AppUtils class.
+	 * initialised in the App class. This logger object will be used for debugging
+	 * and information message logging in the AppUtils class.
 	 */
 	public static void setupLogger() {
 		logger = Logger.getLogger("App.AppUtils");
@@ -78,10 +78,10 @@ public final class AppUtil {
 	 * This is a support method for the computeMoveSequence method in the App class.
 	 * Its inputs are a Position object representing the initial position of the
 	 * drone before a move, a Position object representing the final position of the
-	 * drone after a move, the direction the drone went to during the move, and the
-	 * total value of the drone's coins and power after the move. It outputs a
-	 * String encapsulating all the information from the inputs, which will be
-	 * written in each new line of the output text file of the powergrab
+	 * drone after a move, the direction the drone went to during the move, and 2
+	 * double values total value of the drone's coins and power after the move. It
+	 * outputs a String encapsulating all the information from the inputs, which
+	 * will be written in each new line of the output text file of the powergrab
 	 * application, thus it follows the format specified by the design
 	 * specifications.
 	 * 
@@ -104,7 +104,7 @@ public final class AppUtil {
 		logger.finer(String.format(
 				"Parsing text file output for drone at position %.3f %.3f taking direction %s to position %.3f %.3f",
 				firstPos.latitude, firstPos.longitude, direction, secondPos.latitude, secondPos.longitude));
-		return String.format("%f,%f,%s,%f,%f,%f,%f", firstPos.latitude, firstPos.longitude, direction,
+		return String.format("%s,%s,%s,%s,%s,%f,%f", firstPos.latitude, firstPos.longitude, direction,
 				secondPos.latitude, secondPos.longitude, coins, power);
 	}
 }
